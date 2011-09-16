@@ -142,7 +142,6 @@ static collection_st *init_world(world_st *world)
 int main(int argc, char *argv[])
 {
   test_return_t return_code;
-  unsigned int x;
   char *collection_to_run= NULL;
   char *wildcard= NULL;
   world_st world;
@@ -229,7 +228,7 @@ skip_pre:
     }
 
 
-    for (x= 0; run->name; run++)
+    for ( ; run->name; run++)
     {
       struct timeval start_time, end_time;
       long int load_time= 0;

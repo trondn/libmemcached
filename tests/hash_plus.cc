@@ -60,10 +60,9 @@ static test_return_t assign_test(void *obj)
 static test_return_t digest_test(void *obj)
 {
   Hashkit hashk;
-  uint32_t value;
   (void)obj;
 
-  value= hashk.digest("Foo", sizeof("Foo"));
+  hashk.digest("Foo", sizeof("Foo"));
 
   return TEST_SUCCESS;
 }
@@ -71,7 +70,7 @@ static test_return_t digest_test(void *obj)
 static test_return_t set_function_test(void *obj)
 {
   Hashkit hashk;
-  hashkit_hash_algorithm_t algo_list[]= { 
+  hashkit_hash_algorithm_t algo_list[]= {
     HASHKIT_HASH_DEFAULT,
     HASHKIT_HASH_MD5,
     HASHKIT_HASH_CRC,
@@ -171,7 +170,7 @@ static test_return_t compare_function_test(void *obj)
   (void)obj;
 
   b= a;
-  
+
   test_true(a == b);
 
   b.set_function(HASHKIT_HASH_MURMUR);
