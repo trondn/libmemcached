@@ -175,11 +175,11 @@ static int get_password(sasl_conn_t *conn, void *context, int id,
 /* callbacks we support */
 static sasl_callback_t sasl_callbacks[] = {
   {
-    SASL_CB_USER, &get_username, NULL
+    SASL_CB_USER, (int (*)(void))get_username, NULL
   }, {
-    SASL_CB_AUTHNAME, &get_username, NULL
+    SASL_CB_AUTHNAME, (int (*)(void))get_username, NULL
   }, {
-    SASL_CB_PASS, &get_password, NULL
+    SASL_CB_PASS, (int (*)(void))get_password, NULL
   }, {
     SASL_CB_LIST_END, NULL, NULL
   }
