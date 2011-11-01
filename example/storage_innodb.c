@@ -129,9 +129,12 @@ static bool do_put_item(ib_trx_t trx, struct item* item)
   if (tuple != NULL)
     ib_tuple_delete(tuple);
 
-  ib_err_t currsor_error;
   if (cursor != NULL)
-    currsor_error= ib_cursor_close(cursor);
+  {
+    ib_err_t cursor_error;
+    cursor_error= ib_cursor_close(cursor);
+    (void) cursor_error;
+  }
 
   return retval;
 }
@@ -184,9 +187,12 @@ static bool do_locate_item(ib_trx_t trx,
   if (tuple != NULL)
     ib_tuple_delete(tuple);
 
-  ib_err_t cursor_error;
   if (*cursor != NULL)
+  {
+    ib_err_t cursor_error;
     cursor_error= ib_cursor_close(*cursor);
+    (void) cursor_error;
+  }
 
   *cursor= NULL;
 
@@ -257,9 +263,12 @@ static struct item* do_get_item(ib_trx_t trx, const void* key, size_t nkey)
   if (tuple != NULL)
     ib_tuple_delete(tuple);
 
-  ib_err_t cursor_error;
   if (cursor != NULL)
+  {
+    ib_err_t cursor_error;
     cursor_error= ib_cursor_close(cursor);
+    (void) cursor_error;
+  }
 
   return retval;
 }
@@ -290,6 +299,7 @@ static bool do_delete_item(ib_trx_t trx, const void* key, size_t nkey) {
   {
     ib_err_t cursor_error;
     cursor_error= ib_cursor_close(cursor);
+    (void) cursor_error;
   }
 
   return retval;
@@ -498,6 +508,7 @@ void flush(uint32_t when __attribute__((unused)))
   }
   ib_err_t cursor_error;
   cursor_error= ib_cursor_close(cursor);
+  (void)cursor_error;
   cursor= NULL;
   checked(ib_trx_commit(transaction));
   return;
@@ -506,6 +517,7 @@ void flush(uint32_t when __attribute__((unused)))
   if (cursor != NULL)
   {
     cursor_error= ib_cursor_close(cursor);
+    (void)cursor_error;
   }
 
   ib_err_t error= ib_trx_rollback(transaction);

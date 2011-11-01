@@ -731,7 +731,6 @@ static int ms_new_socket(struct addrinfo *ai)
 static void ms_maximize_sndbuf(const int sfd)
 {
   socklen_t intsize= sizeof(int);
-  unsigned int last_good= 0;
   unsigned int min, max, avg;
   unsigned int old_size;
 
@@ -751,7 +750,6 @@ static void ms_maximize_sndbuf(const int sfd)
     avg= ((unsigned int)(min + max)) / 2;
     if (setsockopt(sfd, SOL_SOCKET, SO_SNDBUF, (void *)&avg, intsize) == 0)
     {
-      last_good= avg;
       min= avg + 1;
     }
     else
@@ -1430,7 +1428,6 @@ static int ms_sort_udp_packet(ms_conn_t *c, char *buf, int rbytes)
   int wbytes= 0;
   uint16_t req_id= 0;
   uint16_t seq_num= 0;
-  uint16_t packets= 0;
   unsigned char *header= NULL;
 
   /* no enough data */
@@ -1462,7 +1459,6 @@ static int ms_sort_udp_packet(ms_conn_t *c, char *buf, int rbytes)
     req_id= (uint16_t)HEADER_TO_REQID(header);
     assert(req_id == c->request_id % (1 << 16));
 
-    packets= (uint16_t)HEADER_TO_PACKETS(header);
     assert(c->packets == HEADER_TO_PACKETS(header));
 
     seq_num= (uint16_t)HEADER_TO_SEQNUM(header);
@@ -3113,7 +3109,7 @@ static int ms_build_ascii_write_buf_mlget(ms_conn_t *c)
  */
 int ms_mcd_mlget(ms_conn_t *c)
 {
-  ms_task_item_t *item;
+  /* ms_task_item_t *item; */
 
   assert(c != NULL);
   assert(c->mlget_task.mlget_num >= 1);
@@ -3155,7 +3151,7 @@ int ms_mcd_mlget(ms_conn_t *c)
   /* decrease operation time of each item */
   for (int i= 0; i < c->mlget_task.mlget_num; i++)
   {
-    item= c->mlget_task.mlget_item[i].item;
+    /* item= c->mlget_task.mlget_item[i].item; */
     atomic_add_size(&ms_stats.cmd_get, 1);
   }
 

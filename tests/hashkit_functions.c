@@ -317,8 +317,7 @@ test_st allocation[]= {
 
 static test_return_t hashkit_digest_test(hashkit_st *hashk)
 {
-  uint32_t value;
-  value= hashkit_digest(hashk, "a", sizeof("a"));
+  hashkit_digest(hashk, "a", sizeof("a"));
 
   return TEST_SUCCESS;
 }
@@ -510,11 +509,9 @@ test_st hashkit_st_functions[] ={
 
 static test_return_t libhashkit_digest_test(hashkit_st *hashk)
 {
-  uint32_t value;
-
   (void)hashk;
 
-  value= libhashkit_digest("a", sizeof("a"), HASHKIT_HASH_DEFAULT);
+  libhashkit_digest("a", sizeof("a"), HASHKIT_HASH_DEFAULT);
 
   return TEST_SUCCESS;
 }

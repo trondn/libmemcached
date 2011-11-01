@@ -205,7 +205,6 @@ static memcached_return_t server_print_callback(const memcached_st *ptr,
 
 static test_return_t memcached_server_remove_test(memcached_st *ptr)
 {
-  memcached_return_t rc;
   memcached_st local_memc;
   memcached_st *memc;
   memcached_server_st *servers;
@@ -218,7 +217,7 @@ static test_return_t memcached_server_remove_test(memcached_st *ptr)
 
   servers= memcached_servers_parse(server_string);
 
-  rc= memcached_server_push(memc, servers);
+  memcached_server_push(memc, servers);
   memcached_server_list_free(servers);
 
   callbacks[0]= server_print_callback;
@@ -1245,7 +1244,6 @@ static test_return_t mget_end(memcached_st *memc)
 /* Do not copy the style of this code, I just access hosts to testthis function */
 static test_return_t stats_servername_test(memcached_st *memc)
 {
-  memcached_return_t rc;
   memcached_stat_st memc_stat;
   memcached_server_instance_st instance=
     memcached_server_instance_by_position(memc, 0);
@@ -1254,9 +1252,9 @@ static test_return_t stats_servername_test(memcached_st *memc)
   if (memcached_get_sasl_callbacks(memc) != NULL)
     return TEST_SKIPPED;
 #endif
-  rc= memcached_stat_servername(&memc_stat, NULL,
-                                memcached_server_name(instance),
-                                memcached_server_port(instance));
+  memcached_stat_servername(&memc_stat, NULL,
+                            memcached_server_name(instance),
+                            memcached_server_port(instance));
 
   return TEST_SUCCESS;
 }
@@ -2596,7 +2594,6 @@ static test_return_t user_supplied_bug11(memcached_st *memc)
   size_t value_length= 512;
   unsigned int x;
   size_t key_len= 3;
-  memcached_return_t rc;
   unsigned int set= 1;
   int32_t timeout;
   memcached_st *mclone= memcached_clone(NULL, memc);
@@ -2618,7 +2615,7 @@ static test_return_t user_supplied_bug11(memcached_st *memc)
 
   for (x= 1; x <= 100000; ++x)
   {
-    rc= memcached_set(mclone, key, key_len,value, value_length, 0, 0);
+    memcached_set(mclone, key, key_len,value, value_length, 0, 0);
   }
 
   free(value);
@@ -2859,7 +2856,6 @@ static test_return_t user_supplied_bug17(memcached_st *memc)
 static test_return_t user_supplied_bug19(memcached_st *not_used)
 {
   memcached_st *memc;
-  const memcached_server_st *server;
   memcached_return_t res;
 
   (void)not_used;
@@ -2868,7 +2864,7 @@ static test_return_t user_supplied_bug19(memcached_st *not_used)
   memcached_server_add_with_weight(memc, "localhost", 11311, 100);
   memcached_server_add_with_weight(memc, "localhost", 11312, 100);
 
-  server= memcached_server_by_key(memc, "a", 1, &res);
+  memcached_server_by_key(memc, "a", 1, &res);
 
   memcached_free(memc);
 
