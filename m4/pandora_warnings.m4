@@ -76,7 +76,7 @@ AC_DEFUN([PANDORA_WARNINGS],[
 
 	 
     AS_IF([test "$ac_cv_warnings_as_errors" = "yes"],
-          [W_FAIL="-Werror"])
+          [W_FAIL=""])
 
     AC_CACHE_CHECK([whether it is safe to use -fdiagnostics-show-option],
       [ac_cv_safe_to_use_fdiagnostics_show_option_],
@@ -113,13 +113,13 @@ AC_DEFUN([PANDORA_WARNINGS],[
 
     AS_IF([test "$INTELCC" = "yes"],[
       m4_if(PW_LESS_WARNINGS,[no],[
-        BASE_WARNINGS="-w1 -Werror -Wcheck -Wp64 -Woverloaded-virtual -Wcast-qual -diag-disable 188"
+        BASE_WARNINGS="-w1  -Wcheck -Wp64 -Woverloaded-virtual -Wcast-qual -diag-disable 188"
       ],[
         dnl 2203 is like old-style-cast
         dnl 1684 is like strict-aliasing
         dnl 188 is about using enums as bitfields
         dnl 1683 is a warning about _EXPLICIT_ casting, which we want
-        BASE_WARNINGS="-w1 -Werror -Wcheck -Wp64 -Woverloaded-virtual -Wcast-qual -diag-disable 188,981,2259,2203,1683,1684"
+        BASE_WARNINGS="-w1  -Wcheck -Wp64 -Woverloaded-virtual -Wcast-qual -diag-disable 188,981,2259,2203,1683,1684"
       ])
       CC_WARNINGS="${BASE_WARNINGS}"
       CXX_WARNINGS="${BASE_WARNINGS}"
@@ -161,9 +161,9 @@ AC_DEFUN([PANDORA_WARNINGS],[
       AC_CACHE_CHECK([whether it is safe to use -Wformat],
         [ac_cv_safe_to_use_wformat_],
         [save_CFLAGS="$CFLAGS"
-         dnl Use -Werror here instead of ${W_FAIL} so that we don't spew
+         dnl Use  here instead of ${W_FAIL} so that we don't spew
          dnl conversion warnings to all the tarball folks
-         CFLAGS="-Wformat -Werror -pedantic ${AM_CFLAGS} ${CFLAGS}"
+         CFLAGS="-Wformat  -pedantic ${AM_CFLAGS} ${CFLAGS}"
          AC_COMPILE_IFELSE(
            [AC_LANG_PROGRAM([[
 #include <stdio.h>
@@ -194,9 +194,9 @@ foo();
       AC_CACHE_CHECK([whether it is safe to use -Wconversion],
         [ac_cv_safe_to_use_wconversion_],
         [save_CFLAGS="$CFLAGS"
-         dnl Use -Werror here instead of ${W_FAIL} so that we don't spew
+         dnl Use  here instead of ${W_FAIL} so that we don't spew
          dnl conversion warnings to all the tarball folks
-         CFLAGS="-Wconversion -Werror -pedantic ${AM_CFLAGS} ${CFLAGS}"
+         CFLAGS="-Wconversion  -pedantic ${AM_CFLAGS} ${CFLAGS}"
          AC_COMPILE_IFELSE(
            [AC_LANG_PROGRAM([[
 #include <stdbool.h>
@@ -216,9 +216,9 @@ foo(0);
         AC_CACHE_CHECK([whether it is safe to use -Wconversion with htons],
           [ac_cv_safe_to_use_Wconversion_],
           [save_CFLAGS="$CFLAGS"
-           dnl Use -Werror here instead of ${W_FAIL} so that we don't spew
+           dnl Use  here instead of ${W_FAIL} so that we don't spew
            dnl conversion warnings to all the tarball folks
-           CFLAGS="-Wconversion -Werror -pedantic ${AM_CFLAGS} ${CFLAGS}"
+           CFLAGS="-Wconversion  -pedantic ${AM_CFLAGS} ${CFLAGS}"
            AC_COMPILE_IFELSE(
              [AC_LANG_PROGRAM(
                [[
@@ -241,7 +241,7 @@ uint16_t x= htons(80);
         [ac_cv_safe_to_use_Wmissing_declarations_],
         [AC_LANG_PUSH(C++)
          save_CXXFLAGS="$CXXFLAGS"
-         CXXFLAGS="-Werror -pedantic -Wmissing-declarations ${AM_CXXFLAGS}"
+         CXXFLAGS=" -pedantic -Wmissing-declarations ${AM_CXXFLAGS}"
          AC_COMPILE_IFELSE([
            AC_LANG_PROGRAM(
            [[
@@ -260,7 +260,7 @@ uint16_t x= htons(80);
         [ac_cv_safe_to_use_Wframe_larger_than_],
         [AC_LANG_PUSH(C++)
          save_CXXFLAGS="$CXXFLAGS"
-         CXXFLAGS="-Werror -pedantic -Wframe-larger-than=32768 ${AM_CXXFLAGS}"
+         CXXFLAGS=" -pedantic -Wframe-larger-than=32768 ${AM_CXXFLAGS}"
          AC_COMPILE_IFELSE([
            AC_LANG_PROGRAM(
            [[
