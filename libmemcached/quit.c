@@ -22,7 +22,8 @@ void memcached_quit_server(memcached_server_st *ptr, bool io_death)
 
       if (ptr->root->flags.binary_protocol)
       {
-        protocol_binary_request_quit request = {.bytes= {0}};
+        protocol_binary_request_quit request;
+        memset(&request, 0, sizeof(request));
         request.message.header.request.magic = PROTOCOL_BINARY_REQ;
         request.message.header.request.opcode = PROTOCOL_BINARY_CMD_QUIT;
         request.message.header.request.datatype = PROTOCOL_BINARY_RAW_BYTES;
@@ -34,7 +35,7 @@ void memcached_quit_server(memcached_server_st *ptr, bool io_death)
       }
 
       WATCHPOINT_ASSERT(rc == MEMCACHED_SUCCESS || rc == MEMCACHED_FETCH_NOTFINISHED);
-      (void)rc; // Shut up ICC
+      (void)rc; /* Shut up ICC */
 
       /* read until socket is closed, or there is an error
        * closing the socket before all data is read
@@ -72,8 +73,8 @@ void memcached_quit_server(memcached_server_st *ptr, bool io_death)
   ptr->options.is_shutting_down= false;
   memcached_server_response_reset(ptr);
 
-  // We reset the version so that if we end up talking to a different server
-  // we don't have stale server version information.
+  /* We reset the version so that if we end up talking to a different server */
+  /* we don't have stale server version information. */
   ptr->major_version= ptr->minor_version= ptr->micro_version= UINT8_MAX;
 
   if (io_death)

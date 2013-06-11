@@ -23,7 +23,7 @@ typedef enum {
 } hashkit_return_t;
 
 typedef enum {
-  HASHKIT_HASH_DEFAULT= 0, // hashkit_one_at_a_time()
+   HASHKIT_HASH_DEFAULT= 0, /* hashkit_one_at_a_time() */
   HASHKIT_HASH_MD5,
   HASHKIT_HASH_CRC,
   HASHKIT_HASH_FNV1_64,

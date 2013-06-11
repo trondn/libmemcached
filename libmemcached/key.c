@@ -1,5 +1,25 @@
 #include "common.h"
 
+memcached_return_t memcached_validate_key_length(size_t key_length, bool binary)
+{
+  unlikely (key_length == 0)
+    return MEMCACHED_BAD_KEY_PROVIDED;
+
+  if (binary)
+  {
+    unlikely (key_length > 0xffff)
+      return MEMCACHED_BAD_KEY_PROVIDED;
+  }
+  else
+  {
+    unlikely (key_length >= MEMCACHED_MAX_KEY)
+      return MEMCACHED_BAD_KEY_PROVIDED;
+  }
+
+  return MEMCACHED_SUCCESS;
+}
+
+
 memcached_return_t memcached_key_test(const char * const *keys,
                                       const size_t *key_length,
                                       size_t number_of_keys)
@@ -14,7 +34,7 @@ memcached_return_t memcached_key_test(const char * const *keys,
     rc= memcached_validate_key_length(*(key_length + x), false);
     if (rc != MEMCACHED_SUCCESS)
       return rc;
- 
+
     for (y= 0; y < *(key_length + x); y++)
     {
       if ((isgraph(keys[x][y])) == 0)
@@ -24,4 +44,3 @@ memcached_return_t memcached_key_test(const char * const *keys,
 
   return MEMCACHED_SUCCESS;
 }
-

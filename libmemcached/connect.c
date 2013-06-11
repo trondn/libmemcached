@@ -16,13 +16,13 @@
 static memcached_return_t connect_poll(memcached_server_st *ptr)
 {
   struct pollfd fds[1];
-  fds[0].fd = ptr->fd;
-  fds[0].events = POLLOUT;
-
   int error;
   size_t loop_max= 5;
 
-  while (--loop_max) // Should only loop on cases of ERESTART or EINTR
+  fds[0].fd = ptr->fd;
+  fds[0].events = POLLOUT;
+
+  while (--loop_max) /* Should only loop on cases of ERESTART or EINTR */
   {
     error= poll(fds, 1, ptr->root->connect_timeout);
 
@@ -34,7 +34,7 @@ static memcached_return_t connect_poll(memcached_server_st *ptr)
         socklen_t len= sizeof (err);
         (void)getsockopt(ptr->fd, SOL_SOCKET, SO_ERROR, &err, &len);
 
-        // We check the value to see what happened wth the socket.
+        /* We check the value to see what happened wth the socket. */
         if (err == 0)
         {
           return MEMCACHED_SUCCESS;
@@ -48,7 +48,7 @@ static memcached_return_t connect_poll(memcached_server_st *ptr)
       }
     case 0:
       return MEMCACHED_TIMEOUT;
-    default: // A real error occurred and we need to completely bail
+    default: /* A real error occurred and we need to completely bail */
       WATCHPOINT_ERRNO(get_socket_errno());
       switch (get_socket_errno())
       {
@@ -78,7 +78,7 @@ static memcached_return_t connect_poll(memcached_server_st *ptr)
     }
   }
 
-  // This should only be possible from ERESTART or EINTR;
+  /* This should only be possible from ERESTART or EINTR; */
   ptr->cached_errno= get_socket_errno();
 
   return MEMCACHED_ERRNO;
@@ -97,7 +97,7 @@ static memcached_return_t set_hostinfo(memcached_server_st *server)
 
   memset(&hints, 0, sizeof(hints));
 
- // hints.ai_family= AF_INET;
+ /* hints.ai_family= AF_INET; */
   if (server->type == MEMCACHED_CONNECTION_UDP)
   {
     hints.ai_protocol= IPPROTO_UDP;
@@ -147,7 +147,7 @@ static memcached_return_t set_hostinfo(memcached_server_st *server)
   return MEMCACHED_SUCCESS;
 }
 
-static inline memcached_return_t set_socket_nonblocking(memcached_server_st *ptr)
+static memcached_return_t set_socket_nonblocking(memcached_server_st *ptr)
 {
 #ifdef WIN32
   u_long arg = 1;
@@ -233,7 +233,7 @@ static memcached_return_t set_socket_options(memcached_server_st *ptr)
     int set = 1;
     int error= setsockopt(ptr->fd, SOL_SOCKET, SO_NOSIGPIPE, (void *)&set, sizeof(int));
 
-    // This is not considered a fatal error
+    /* This is not considered a fatal error */
     if (error == -1)
     {
       WATCHPOINT_ERRNO(get_socket_errno());
@@ -369,7 +369,7 @@ test_connect:
 static memcached_return_t network_connect(memcached_server_st *ptr)
 {
   bool timeout_error_occured= false;
-
+  struct addrinfo *use;
 
   WATCHPOINT_ASSERT(ptr->fd == INVALID_SOCKET);
   WATCHPOINT_ASSERT(ptr->cursor_active == 0);
@@ -384,7 +384,7 @@ static memcached_return_t network_connect(memcached_server_st *ptr)
     ptr->options.sockaddr_inited= true;
   }
 
-  struct addrinfo *use= ptr->address_info;
+  use= ptr->address_info;
   /* Create the socket */
   while (use != NULL)
   {
@@ -409,7 +409,7 @@ static memcached_return_t network_connect(memcached_server_st *ptr)
     /* connect to server */
     if ((connect(ptr->fd, use->ai_addr, use->ai_addrlen) != SOCKET_ERROR))
     {
-      break; // Success
+      break; /* Success */
     }
 
     /* An error occurred */
@@ -431,7 +431,7 @@ static memcached_return_t network_connect(memcached_server_st *ptr)
     {
       break;
     }
-    else if (get_socket_errno() == EINTR) // Special case, we retry ai_addr
+    else if (get_socket_errno() == EINTR) /* Special case, we retry ai_addr */
     {
       (void)closesocket(ptr->fd);
       ptr->fd= INVALID_SOCKET;
@@ -467,7 +467,7 @@ static memcached_return_t network_connect(memcached_server_st *ptr)
 
 void set_last_disconnected_host(memcached_server_write_instance_st ptr)
 {
-  // const_cast
+  /* const_cast */
   memcached_st *root= (memcached_st *)ptr->root;
 
 #if 0
@@ -497,8 +497,8 @@ memcached_return_t memcached_connect(memcached_server_write_instance_st ptr)
 
     gettimeofday(&curr_time, NULL);
 
-    // We should optimize this to remove the allocation if the server was
-    // the last server to die
+    /* We should optimize this to remove the allocation if the server was */
+    /* the last server to die */
     if (ptr->next_retry > curr_time.tv_sec)
     {
       set_last_disconnected_host(ptr);
@@ -507,14 +507,14 @@ memcached_return_t memcached_connect(memcached_server_write_instance_st ptr)
     }
   }
 
-  // If we are over the counter failure, we just fail. Reject host only
-  // works if you have a set number of failures.
+  /* If we are over the counter failure, we just fail. Reject host only */
+  /* works if you have a set number of failures. */
   if (ptr->root->server_failure_limit && ptr->server_failure_counter >= ptr->root->server_failure_limit)
   {
     set_last_disconnected_host(ptr);
 
-    // @todo fix this by fixing behavior to no longer make use of
-    // memcached_st
+    /* @todo fix this by fixing behavior to no longer make use of */
+    /* memcached_st */
     if (_is_auto_eject_host(ptr->root))
     {
       run_distribution((memcached_st *)ptr->root);

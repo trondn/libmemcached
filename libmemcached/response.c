@@ -22,6 +22,7 @@ memcached_return_t memcached_read_one_response(memcached_server_write_instance_s
                                                char *buffer, size_t buffer_length,
                                                memcached_result_st *result)
 {
+  memcached_return_t rc;
   memcached_server_response_decrement(ptr);
 
   if (result == NULL)
@@ -30,7 +31,6 @@ memcached_return_t memcached_read_one_response(memcached_server_write_instance_s
     result = &root->result;
   }
 
-  memcached_return_t rc;
   if (ptr->root->flags.binary_protocol)
     rc= binary_read_one_response(ptr, buffer, buffer_length, result);
   else
@@ -322,9 +322,9 @@ static memcached_return_t textual_read_one_response(memcached_server_write_insta
     return MEMCACHED_CLIENT_ERROR;
   default:
     {
-      unsigned long long auto_return_value;
+      uint64_t auto_return_value;
 
-      if (sscanf(buffer, "%llu", &auto_return_value) == 1)
+      if (sscanf(buffer, "%"PRIu64"u", &auto_return_value) == 1)
         return MEMCACHED_SUCCESS;
 
       WATCHPOINT_STRING(buffer);
@@ -341,6 +341,7 @@ static memcached_return_t binary_read_one_response(memcached_server_write_instan
 {
   memcached_return_t rc;
   protocol_binary_response_header header;
+  uint32_t bodylen;
 
   if ((rc= memcached_safe_read(ptr, &header.bytes, sizeof(header.bytes))) != MEMCACHED_SUCCESS)
   {
@@ -360,7 +361,7 @@ static memcached_return_t binary_read_one_response(memcached_server_write_instan
   header.response.status= ntohs(header.response.status);
   header.response.bodylen= ntohl(header.response.bodylen);
   header.response.cas= ntohll(header.response.cas);
-  uint32_t bodylen= header.response.bodylen;
+  bodylen= header.response.bodylen;
 
   if (header.response.status == PROTOCOL_BINARY_RESPONSE_SUCCESS ||
       header.response.status == PROTOCOL_BINARY_RESPONSE_AUTH_CONTINUE)
@@ -376,6 +377,7 @@ static memcached_return_t binary_read_one_response(memcached_server_write_instan
       /* FALLTHROUGH */
     case PROTOCOL_BINARY_CMD_GETK:
       {
+        char *vptr;
         uint16_t keylen= header.response.keylen;
         memcached_result_reset(result);
         result->item_cas= header.response.cas;
@@ -401,7 +403,7 @@ static memcached_return_t binary_read_one_response(memcached_server_write_instan
                                    bodylen) != MEMCACHED_SUCCESS)
           return MEMCACHED_MEMORY_ALLOCATION_FAILURE;
 
-        char *vptr= memcached_string_value_mutable(&result->value);
+        vptr= memcached_string_value_mutable(&result->value);
         if ((rc= memcached_safe_read(ptr, vptr, bodylen)) != MEMCACHED_SUCCESS)
         {
           WATCHPOINT_ERROR(rc);
@@ -414,11 +416,11 @@ static memcached_return_t binary_read_one_response(memcached_server_write_instan
     case PROTOCOL_BINARY_CMD_INCREMENT:
     case PROTOCOL_BINARY_CMD_DECREMENT:
       {
+        uint64_t val;
         if (bodylen != sizeof(uint64_t) || buffer_length != sizeof(uint64_t))
           return MEMCACHED_PROTOCOL_ERROR;
 
         WATCHPOINT_ASSERT(bodylen == buffer_length);
-        uint64_t val;
         if ((rc= memcached_safe_read(ptr, &val, sizeof(val))) != MEMCACHED_SUCCESS)
         {
           WATCHPOINT_ERROR(rc);
@@ -490,6 +492,7 @@ static memcached_return_t binary_read_one_response(memcached_server_write_instan
     case PROTOCOL_BINARY_CMD_SASL_AUTH:
     case PROTOCOL_BINARY_CMD_SASL_STEP:
       {
+        char *vptr;
         memcached_result_reset(result);
         result->item_cas= header.response.cas;
 
@@ -497,7 +500,7 @@ static memcached_return_t binary_read_one_response(memcached_server_write_instan
                                    bodylen) != MEMCACHED_SUCCESS)
           return MEMCACHED_MEMORY_ALLOCATION_FAILURE;
 
-        char *vptr= memcached_string_value_mutable(&result->value);
+        vptr= memcached_string_value_mutable(&result->value);
         if ((rc= memcached_safe_read(ptr, vptr, bodylen)) != MEMCACHED_SUCCESS)
         {
           WATCHPOINT_ERROR(rc);

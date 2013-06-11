@@ -11,41 +11,12 @@
 
 #include "common.h"
 
-static const memcached_st global_copy= {
-  .state= {
-    .is_purging= false,
-    .is_processing_input= false,
-    .is_time_for_rebuild= false,
-  },
-  .flags= {
-    .auto_eject_hosts= false,
-    .binary_protocol= false,
-    .buffer_requests= false,
-    .cork= false,
-    .hash_with_prefix_key= false,
-    .ketama_weighted= false,
-    .no_block= false,
-    .no_reply= false,
-    .randomize_replica_read= false,
-    .reuse_memory= false,
-    .support_cas= false,
-    .tcp_nodelay= false,
-    .use_cache_lookups= false,
-    .use_sort_hosts= false,
-    .use_udp= false,
-    .verify_key= false,
-    .tcp_keepalive= false
-  }
-};
-
-static inline bool _memcached_init(memcached_st *self)
+static bool _memcached_init(memcached_st *self)
 {
-  self->state= global_copy.state;
-  self->flags= global_copy.flags;
-
+  hashkit_st *hash_ptr;
+  memset(self, 0, sizeof(*self));
   self->distribution= MEMCACHED_DISTRIBUTION_MODULA;
 
-  hashkit_st *hash_ptr;
   hash_ptr= hashkit_create(&self->hashkit);
   if (! hash_ptr)
     return false;
@@ -199,6 +170,7 @@ memcached_st *memcached_clone(memcached_st *clone, const memcached_st *source)
 {
   memcached_return_t rc= MEMCACHED_SUCCESS;
   memcached_st *new_clone;
+  hashkit_st *hash_ptr;
 
   if (source == NULL)
     return memcached_create(clone);
@@ -220,8 +192,6 @@ memcached_st *memcached_clone(memcached_st *clone, const memcached_st *source)
   new_clone->connect_timeout= source->connect_timeout;
   new_clone->retry_timeout= source->retry_timeout;
   new_clone->distribution= source->distribution;
-
-  hashkit_st *hash_ptr;
 
   hash_ptr= hashkit_clone(&new_clone->hashkit, &source->hashkit);
   if (! hash_ptr)

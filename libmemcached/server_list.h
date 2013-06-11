@@ -47,7 +47,7 @@ LIBMEMCACHED_LOCAL
   void memcached_server_list_set(memcached_st *self, memcached_server_list_st list);
 
 #ifdef __cplusplus
-} // extern "C"
+} /* extern "C" */
 #endif
 
 #endif /* __LIBMEMCACHED_SERVER_LIST_H__ */

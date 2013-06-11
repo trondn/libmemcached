@@ -18,9 +18,10 @@ uint32_t hashkit_fnv1_64(const char *key, size_t key_length, void *context)
 {
   /* Thanks to pierre@demartines.com for the pointer */
   uint64_t hash= FNV_64_INIT;
+  size_t x;
   (void)context;
 
-  for (size_t x= 0; x < key_length; x++)
+  for (x= 0; x < key_length; x++)
   {
     hash *= FNV_64_PRIME;
     hash ^= (uint64_t)key[x];
@@ -32,9 +33,10 @@ uint32_t hashkit_fnv1_64(const char *key, size_t key_length, void *context)
 uint32_t hashkit_fnv1a_64(const char *key, size_t key_length, void *context)
 {
   uint32_t hash= (uint32_t) FNV_64_INIT;
+  size_t x;
   (void)context;
 
-  for (size_t x= 0; x < key_length; x++)
+  for (x= 0; x < key_length; x++)
   {
     uint32_t val= (uint32_t)key[x];
     hash ^= val;
@@ -47,9 +49,10 @@ uint32_t hashkit_fnv1a_64(const char *key, size_t key_length, void *context)
 uint32_t hashkit_fnv1_32(const char *key, size_t key_length, void *context)
 {
   uint32_t hash= FNV_32_INIT;
+  size_t x;
   (void)context;
 
-  for (size_t x= 0; x < key_length; x++)
+  for (x= 0; x < key_length; x++)
   {
     uint32_t val= (uint32_t)key[x];
     hash *= FNV_32_PRIME;
@@ -62,9 +65,10 @@ uint32_t hashkit_fnv1_32(const char *key, size_t key_length, void *context)
 uint32_t hashkit_fnv1a_32(const char *key, size_t key_length, void *context)
 {
   uint32_t hash= FNV_32_INIT;
+  size_t x;
   (void)context;
 
-  for (size_t x= 0; x < key_length; x++)
+  for (x= 0; x < key_length; x++)
   {
     uint32_t val= (uint32_t)key[x];
     hash ^= val;

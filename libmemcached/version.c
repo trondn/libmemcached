@@ -1,46 +1,47 @@
 #include "common.h"
 
-const char * memcached_lib_version(void) 
+const char * memcached_lib_version(void)
 {
   return LIBMEMCACHED_VERSION_STRING;
 }
 
-static inline memcached_return_t memcached_version_binary(memcached_st *ptr);
-static inline memcached_return_t memcached_version_textual(memcached_st *ptr);
+static memcached_return_t memcached_version_binary(memcached_st *ptr);
+static memcached_return_t memcached_version_textual(memcached_st *ptr);
 
 memcached_return_t memcached_version(memcached_st *ptr)
 {
+  memcached_return_t rc;
+
   if (ptr->flags.use_udp)
     return MEMCACHED_NOT_SUPPORTED;
-
-  memcached_return_t rc;
 
   if (ptr->flags.binary_protocol)
     rc= memcached_version_binary(ptr);
   else
-    rc= memcached_version_textual(ptr);      
+    rc= memcached_version_textual(ptr);
 
   return rc;
 }
 
-static inline memcached_return_t memcached_version_textual(memcached_st *ptr)
+static memcached_return_t memcached_version_textual(memcached_st *ptr)
 {
   size_t send_length;
   memcached_return_t rc;
   char buffer[MEMCACHED_DEFAULT_COMMAND_SIZE];
   char *response_ptr;
   const char *command= "version\r\n";
+  uint32_t x;
 
   send_length= strlen(command);
 
   rc= MEMCACHED_SUCCESS;
-  for (uint32_t x= 0; x < memcached_server_count(ptr); x++)
+  for (x= 0; x < memcached_server_count(ptr); x++)
   {
     memcached_return_t rrc;
     memcached_server_write_instance_st instance=
       memcached_server_instance_fetch(ptr, x);
 
-    // Optimization, we only fetch version once.
+    /* Optimization, we only fetch version once. */
     if (instance->major_version != UINT8_MAX)
       continue;
 
@@ -97,16 +98,19 @@ static inline memcached_return_t memcached_version_textual(memcached_st *ptr)
   return rc;
 }
 
-static inline memcached_return_t memcached_version_binary(memcached_st *ptr)
+static memcached_return_t memcached_version_binary(memcached_st *ptr)
 {
   memcached_return_t rc;
-  protocol_binary_request_version request= { .bytes= {0}};
+  uint32_t x;
+  protocol_binary_request_version request;
+
+  memset(&request, 0, sizeof(request));
   request.message.header.request.magic= PROTOCOL_BINARY_REQ;
   request.message.header.request.opcode= PROTOCOL_BINARY_CMD_VERSION;
   request.message.header.request.datatype= PROTOCOL_BINARY_RAW_BYTES;
 
   rc= MEMCACHED_SUCCESS;
-  for (uint32_t x= 0; x < memcached_server_count(ptr); x++) 
+  for (x= 0; x < memcached_server_count(ptr); x++)
   {
     memcached_return_t rrc;
 
@@ -117,7 +121,7 @@ static inline memcached_return_t memcached_version_binary(memcached_st *ptr)
       continue;
 
     rrc= memcached_do(instance, request.bytes, sizeof(request.bytes), true);
-    if (rrc != MEMCACHED_SUCCESS) 
+    if (rrc != MEMCACHED_SUCCESS)
     {
       memcached_io_reset(instance);
       rc= MEMCACHED_SOME_ERRORS;
@@ -125,7 +129,7 @@ static inline memcached_return_t memcached_version_binary(memcached_st *ptr)
     }
   }
 
-  for (uint32_t x= 0; x < memcached_server_count(ptr); x++) 
+  for (x= 0; x < memcached_server_count(ptr); x++)
   {
     memcached_server_write_instance_st instance=
       memcached_server_instance_fetch(ptr, x);
@@ -133,14 +137,14 @@ static inline memcached_return_t memcached_version_binary(memcached_st *ptr)
     if (instance->major_version != UINT8_MAX)
       continue;
 
-    if (memcached_server_response_count(instance) > 0) 
+    if (memcached_server_response_count(instance) > 0)
     {
       memcached_return_t rrc;
       char buffer[32];
       char *p;
 
       rrc= memcached_response(instance, buffer, sizeof(buffer), NULL);
-      if (rrc != MEMCACHED_SUCCESS) 
+      if (rrc != MEMCACHED_SUCCESS)
       {
         memcached_io_reset(instance);
         rc= MEMCACHED_SOME_ERRORS;

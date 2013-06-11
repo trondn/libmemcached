@@ -5,7 +5,7 @@
  * Use and distribution licensed under the BSD license.  See
  * the COPYING file in the parent directory for full text.
  *
- * Summary: 
+ * Summary:
  *
  */
 
@@ -17,7 +17,7 @@ uint32_t memcached_generate_hash_value(const char *key, size_t key_length, memca
   return libhashkit_digest(key, key_length, (hashkit_hash_algorithm_t)hash_algorithm);
 }
 
-static inline uint32_t generate_hash(const memcached_st *ptr, const char *key, size_t key_length)
+static uint32_t generate_hash(const memcached_st *ptr, const char *key, size_t key_length)
 {
   return hashkit_digest(&ptr->hashkit, key, key_length);
 }
@@ -30,11 +30,10 @@ static uint32_t dispatch_host(const memcached_st *ptr, uint32_t hash)
   case MEMCACHED_DISTRIBUTION_CONSISTENT_KETAMA:
   case MEMCACHED_DISTRIBUTION_CONSISTENT_KETAMA_SPY:
     {
+      memcached_continuum_item_st *begin, *end, *left, *right, *middle;
       uint32_t num= ptr->continuum_points_counter;
       WATCHPOINT_ASSERT(ptr->continuum);
 
-      hash= hash;
-      memcached_continuum_item_st *begin, *end, *left, *right, *middle;
       begin= left= ptr->continuum;
       end= right= ptr->continuum + num;
 
@@ -65,7 +64,7 @@ static uint32_t dispatch_host(const memcached_st *ptr, uint32_t hash)
 /*
   One version is public and will not modify the distribution hash, the other will.
 */
-static inline uint32_t _generate_hash_wrapper(const memcached_st *ptr, const char *key, size_t key_length)
+static uint32_t _generate_hash_wrapper(const memcached_st *ptr, const char *key, size_t key_length)
 {
   WATCHPOINT_ASSERT(memcached_server_count(ptr));
 
@@ -75,7 +74,8 @@ static inline uint32_t _generate_hash_wrapper(const memcached_st *ptr, const cha
   if (ptr->flags.hash_with_prefix_key)
   {
     size_t temp_length= ptr->prefix_key_length + key_length;
-    char temp[temp_length];
+    char *temp = malloc(temp_length);
+    uint32_t ret;
 
     if (temp_length > MEMCACHED_MAX_KEY -1)
       return 0;
@@ -83,7 +83,9 @@ static inline uint32_t _generate_hash_wrapper(const memcached_st *ptr, const cha
     strncpy(temp, ptr->prefix_key, ptr->prefix_key_length);
     strncpy(temp + ptr->prefix_key_length, key, key_length);
 
-    return generate_hash(ptr, temp, temp_length);
+    ret = generate_hash(ptr, temp, temp_length);
+    free(temp);
+    return ret;
   }
   else
   {
@@ -91,7 +93,7 @@ static inline uint32_t _generate_hash_wrapper(const memcached_st *ptr, const cha
   }
 }
 
-static inline void _regen_for_auto_eject(memcached_st *ptr)
+static void _regen_for_auto_eject(memcached_st *ptr)
 {
   if (_is_auto_eject_host(ptr) && ptr->next_distribution_rebuild)
   {

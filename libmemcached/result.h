@@ -70,7 +70,7 @@ LIBMEMCACHED_API
 void memcached_result_set_expiration(memcached_result_st *self, time_t expiration);
 
 #ifdef __cplusplus
-} // extern "C"
+} /* extern "C" */
 #endif
 
 

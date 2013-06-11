@@ -23,6 +23,7 @@ static memcached_return_t text_incr_decr(memcached_st *ptr,
   uint32_t server_key;
   memcached_server_write_instance_st instance;
   bool no_reply= ptr->flags.no_reply;
+  int send_length;
 
   unlikely (memcached_server_count(ptr) == 0)
     return MEMCACHED_NO_SERVERS;
@@ -33,7 +34,6 @@ static memcached_return_t text_incr_decr(memcached_st *ptr,
   server_key= memcached_generate_hash_with_redistribution(ptr, master_key, master_key_length);
   instance= memcached_server_instance_fetch(ptr, server_key);
 
-  int send_length;
   send_length= snprintf(buffer, MEMCACHED_DEFAULT_COMMAND_SIZE,
                         "%s %.*s%.*s %" PRIu64 "%s\r\n", verb,
                         (int)ptr->prefix_key_length,
@@ -90,6 +90,9 @@ static memcached_return_t binary_incr_decr(memcached_st *ptr, uint8_t cmd,
   uint32_t server_key;
   memcached_server_write_instance_st instance;
   bool no_reply= ptr->flags.no_reply;
+  protocol_binary_request_incr request;
+  memcached_return_t rc;
+  struct libmemcached_io_vector_st vector[3];
 
   unlikely (memcached_server_count(ptr) == 0)
     return MEMCACHED_NO_SERVERS;
@@ -104,8 +107,8 @@ static memcached_return_t binary_incr_decr(memcached_st *ptr, uint8_t cmd,
     if(cmd == PROTOCOL_BINARY_CMD_INCREMENT)
       cmd= PROTOCOL_BINARY_CMD_INCREMENTQ;
   }
-  protocol_binary_request_incr request= {.bytes= {0}};
 
+  memset(&request, 0, sizeof(request));
   request.message.header.request.magic= PROTOCOL_BINARY_REQ;
   request.message.header.request.opcode= cmd;
   request.message.header.request.keylen= htons((uint16_t)(key_length + ptr->prefix_key_length));
@@ -116,14 +119,14 @@ static memcached_return_t binary_incr_decr(memcached_st *ptr, uint8_t cmd,
   request.message.body.initial= htonll(initial);
   request.message.body.expiration= htonl((uint32_t) expiration);
 
-  struct libmemcached_io_vector_st vector[]=
-  {
-    { .length= sizeof(request.bytes), .buffer= request.bytes },
-    { .length= ptr->prefix_key_length, .buffer= ptr->prefix_key },
-    { .length= key_length, .buffer= key }
-  };
+  memset(&vector, 0, sizeof(vector));
+  vector[0].length= sizeof(request.bytes);
+  vector[0].buffer= request.bytes;
+  vector[1].length= ptr->prefix_key_length;
+  vector[1].buffer= ptr->prefix_key;
+  vector[2].length= key_length;
+  vector[2].buffer= key;
 
-  memcached_return_t rc;
   if ((rc= memcached_vdo(instance, vector, 3, true)) != MEMCACHED_SUCCESS)
   {
     memcached_io_reset(instance);
@@ -292,4 +295,3 @@ memcached_return_t memcached_decrement_with_initial_by_key(memcached_st *ptr,
 
   return rc;
 }
-

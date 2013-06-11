@@ -7,27 +7,16 @@
  */
 
 #include "common.h"
+#include <string.h>
 
-static const hashkit_st global_default_hash= {
-  .base_hash= {
-    .function= hashkit_one_at_a_time,
-    .context= NULL
-  },
-  .flags= {
-    .is_base_same_distributed= false,
-  }
-};
-
-static inline bool _hashkit_init(hashkit_st *self)
+static bool _hashkit_init(hashkit_st *self)
 {
-  self->base_hash= global_default_hash.base_hash;
-  self->distribution_hash= global_default_hash.base_hash;
-  self->flags= global_default_hash.flags;
-
-  return true;
+   memset(self, 0, sizeof(*self));
+   self->base_hash.function = hashkit_one_at_a_time;
+   return true;
 }
 
-static inline hashkit_st *_hashkit_create(hashkit_st *self)
+static hashkit_st *_hashkit_create(hashkit_st *self)
 {
   if (self == NULL)
   {
@@ -77,10 +66,10 @@ hashkit_st *hashkit_clone(hashkit_st *destination, const hashkit_st *source)
     return hashkit_create(destination);
   }
 
-  /* new_clone will be a pointer to destination */ 
+  /* new_clone will be a pointer to destination */
   destination= _hashkit_create(destination);
 
-  // Should only happen on allocation failure.
+  /* Should only happen on allocation failure. */
   if (destination == NULL)
   {
     return NULL;

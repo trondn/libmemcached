@@ -30,7 +30,7 @@
 #include <libmemcached/string.h>
 #include <libmemcached/stats.h>
 #include <libhashkit/hashkit.h>
-// Everything above this line must be in the order specified.
+/* Everything above this line must be in the order specified. */
 #include <libmemcached/allocators.h>
 #include <libmemcached/analyze.h>
 #include <libmemcached/auto.h>
@@ -64,14 +64,14 @@ struct memcached_st {
     bool is_time_for_rebuild:1;
   } state;
   struct {
-    // Everything below here is pretty static.
+    /* Everything below here is pretty static. */
     bool auto_eject_hosts:1;
     bool binary_protocol:1;
     bool buffer_requests:1;
     bool cork:1;
     bool hash_with_prefix_key:1;
     bool ketama_weighted:1;
-    bool no_block:1; // Don't block
+    bool no_block:1; /* Don't block */
     bool no_reply:1;
     bool randomize_replica_read:1;
     bool reuse_memory:1;
@@ -85,7 +85,7 @@ struct memcached_st {
   } flags;
   memcached_server_distribution_t distribution;
   hashkit_st hashkit;
-  uint32_t continuum_points_counter; // Ketama
+  uint32_t continuum_points_counter; /* Ketama */
   uint32_t number_of_hosts;
   memcached_server_st *servers;
   memcached_server_st *last_disconnected_server;
@@ -100,16 +100,16 @@ struct memcached_st {
   int32_t poll_timeout;
   int32_t connect_timeout;
   int32_t retry_timeout;
-  uint32_t continuum_count; // Ketama
+  uint32_t continuum_count; /* Ketama */
   int send_size;
   int recv_size;
   void *user_data;
-  time_t next_distribution_rebuild; // Ketama
+  time_t next_distribution_rebuild; /* Ketama */
   size_t prefix_key_length;
   uint32_t number_of_replicas;
   hashkit_st distribution_hashkit;
   memcached_result_st result;
-  memcached_continuum_item_st *continuum; // Ketama
+  memcached_continuum_item_st *continuum; /* Ketama */
 
   struct _allocators_st {
     memcached_calloc_fn calloc;
@@ -167,38 +167,7 @@ LIBMEMCACHED_API
 uint32_t memcached_server_count(const memcached_st *);
 
 #ifdef __cplusplus
-} // extern "C"
-#endif
-
-
-#ifdef __cplusplus
-class Memcached : private memcached_st {
-public:
-
-  Memcached()
-  {
-    memcached_create(this);
-  }
-
-  ~Memcached()
-  {
-    memcached_free(this);
-  }
-
-  Memcached(const Memcached& source)
-  {
-    memcached_clone(this, &source);
-  }
-
-  Memcached& operator=(const Memcached& source)
-  {
-    memcached_free(this);
-    memcached_clone(this, &source);
-
-    return *this;
-  }
-};
+} /* extern "C" */
 #endif
 
 #endif /* __LIBMEMCACHED_MEMCACHED_H__ */
-

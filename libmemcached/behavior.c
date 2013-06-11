@@ -13,9 +13,49 @@
 #include <time.h>
 #include <sys/types.h>
 
+#ifdef TCP_CORK
+  #define CORK TCP_CORK
+#elif defined TCP_NOPUSH
+  #define CORK TCP_NOPUSH
+#endif
+
+/*
+  test_cork() tries to enable TCP_CORK. IF TCP_CORK is not an option
+  on the system it returns false but sets errno to 0. Otherwise on
+  failure errno is set.
+*/
+static memcached_ternary_t test_cork(memcached_server_st *ptr, int enable)
+{
+#ifdef CORK
+  int err;
+  if (ptr->type != MEMCACHED_CONNECTION_TCP)
+    return MEM_FALSE;
+
+  err= setsockopt(ptr->fd, IPPROTO_TCP, CORK,
+                      &enable, (socklen_t)sizeof(int));
+  if (! err)
+  {
+    return MEM_TRUE;
+  }
+
+  perror(strerror(errno));
+  ptr->cached_errno= errno;
+
+  return MEM_FALSE;
+#else
+  (void)ptr;
+  (void)enable;
+
+  ptr->cached_errno= 0;
+
+  return MEM_NOT;
+#endif
+}
+
+
 static bool set_flag(uint64_t data)
 {
-  // Wordy :)
+  /* Wordy :) */
   return data ? true : false;
 }
 
@@ -53,7 +93,7 @@ memcached_return_t memcached_behavior_set(memcached_st *ptr,
     ptr->server_failure_limit= (uint32_t)data;
     break;
   case MEMCACHED_BEHAVIOR_BINARY_PROTOCOL:
-    memcached_quit(ptr); // We need t shutdown all of the connections to make sure we do the correct protocol
+    memcached_quit(ptr); /* We need t shutdown all of the connections to make sure we do the correct protocol */
     if (data)
     {
       ptr->flags.verify_key= false;
@@ -177,6 +217,8 @@ memcached_return_t memcached_behavior_set(memcached_st *ptr,
       break;
   case MEMCACHED_BEHAVIOR_CORK:
       {
+        memcached_return_t rc;
+        memcached_ternary_t enabled;
         memcached_server_write_instance_st instance;
         bool action= set_flag(data);
 
@@ -192,7 +234,6 @@ memcached_return_t memcached_behavior_set(memcached_st *ptr,
 
 
         /* We just try the first host, and if it is down we return zero */
-        memcached_return_t rc;
         rc= memcached_connect(instance);
         if (rc != MEMCACHED_SUCCESS)
         {
@@ -200,7 +241,6 @@ memcached_return_t memcached_behavior_set(memcached_st *ptr,
         }
 
         /* Now we test! */
-        memcached_ternary_t enabled;
         enabled= test_cork(instance, true);
 
         switch (enabled)
@@ -211,14 +251,14 @@ memcached_return_t memcached_behavior_set(memcached_st *ptr,
           {
             enabled= test_cork(instance, false);
 
-            if (enabled == false) // Possible bug in OS?
+            if (enabled == false) /* Possible bug in OS? */
             {
-              memcached_quit_server(instance, false); // We should reset everything on this error.
-              return MEMCACHED_ERRNO;  // Errno will be true because we will have already set it.
+              memcached_quit_server(instance, false); /* We should reset everything on this error. */
+              return MEMCACHED_ERRNO;  /* Errno will be true because we will have already set it. */
             }
             ptr->flags.cork= true;
             ptr->flags.tcp_nodelay= true;
-            memcached_quit(ptr); // We go on and reset the connections.
+            memcached_quit(ptr); /* We go on and reset the connections. */
           }
           break;
         case MEM_NOT:
@@ -303,12 +343,12 @@ uint64_t memcached_behavior_get(memcached_st *ptr,
       socklen_t sock_length= sizeof(int);
       memcached_server_write_instance_st instance;
 
-      if (ptr->send_size != -1) // If value is -1 then we are using the default
+      if (ptr->send_size != -1) /* If value is -1 then we are using the default */
         return (uint64_t) ptr->send_size;
 
       instance= memcached_server_instance_fetch(ptr, 0);
 
-      if (instance) // If we have an instance we test, otherwise we just set and pray
+      if (instance) /* If we have an instance we test, otherwise we just set and pray */
       {
         /* REFACTOR */
         /* We just try the first host, and if it is down we return zero */
@@ -337,7 +377,7 @@ uint64_t memcached_behavior_get(memcached_st *ptr,
       socklen_t sock_length= sizeof(int);
       memcached_server_write_instance_st instance;
 
-      if (ptr->recv_size != -1) // If value is -1 then we are using the default
+      if (ptr->recv_size != -1) /* If value is -1 then we are using the default */
         return (uint64_t) ptr->recv_size;
 
       instance= memcached_server_instance_fetch(ptr, 0);

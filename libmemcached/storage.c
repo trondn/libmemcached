@@ -17,11 +17,11 @@ typedef enum {
   ADD_OP,
   PREPEND_OP,
   APPEND_OP,
-  CAS_OP,
+  CAS_OP
 } memcached_storage_action_t;
 
-/* Inline this */
-static inline const char *storage_op_string(memcached_storage_action_t verb)
+/* this */
+static const char *storage_op_string(memcached_storage_action_t verb)
 {
   switch (verb)
   {
@@ -56,7 +56,7 @@ static memcached_return_t memcached_send_binary(memcached_st *ptr,
                                                 uint64_t cas,
                                                 memcached_storage_action_t verb);
 
-static inline memcached_return_t memcached_send(memcached_st *ptr,
+static memcached_return_t memcached_send(memcached_st *ptr,
                                                 const char *master_key, size_t master_key_length,
                                                 const char *key, size_t key_length,
                                                 const char *value, size_t value_length,
@@ -106,13 +106,13 @@ static inline memcached_return_t memcached_send(memcached_st *ptr,
     {
       int check_length;
       check_length= snprintf(buffer, MEMCACHED_DEFAULT_COMMAND_SIZE,
-                                    "%s %.*s%.*s %u %llu %lu %llu%s\r\n",
+                                    "%s %.*s%.*s %u %"PRIu64"u %lu %"PRIu64"u%s\r\n",
                                     storage_op_string(verb),
                                     (int)ptr->prefix_key_length,
                                     ptr->prefix_key,
                                     (int)key_length, key, flags,
-                                    (unsigned long long)expiration, (unsigned long)value_length,
-                                    (unsigned long long)cas,
+                                    (uint64_t)expiration, (unsigned long)value_length,
+                                    (uint64_t)cas,
                                     (ptr->flags.no_reply) ? " noreply" : "");
       if (check_length >= MEMCACHED_DEFAULT_COMMAND_SIZE || check_length < 0)
       {
@@ -125,6 +125,7 @@ static inline memcached_return_t memcached_send(memcached_st *ptr,
     }
     else
     {
+      int check_length;
       char *buffer_ptr= buffer;
       const char *command= storage_op_string(verb);
 
@@ -142,11 +143,10 @@ static inline memcached_return_t memcached_send(memcached_st *ptr,
       buffer_ptr++;
 
       write_length= (size_t)(buffer_ptr - buffer);
-      int check_length;
       check_length= snprintf(buffer_ptr, MEMCACHED_DEFAULT_COMMAND_SIZE -(size_t)(buffer_ptr - buffer),
-                                    "%u %llu %lu%s\r\n",
+                                    "%u %"PRIu64"u %lu%s\r\n",
                                     flags,
-                                    (unsigned long long)expiration, (unsigned long)value_length,
+                                    (uint64_t)expiration, (unsigned long)value_length,
                                     ptr->flags.no_reply ? " noreply" : "");
       if ((size_t)check_length >= MEMCACHED_DEFAULT_COMMAND_SIZE -(size_t)(buffer_ptr - buffer) || check_length < 0)
       {
@@ -175,12 +175,14 @@ static inline memcached_return_t memcached_send(memcached_st *ptr,
     }
     else
     {
-      struct libmemcached_io_vector_st vector[]=
-      {
-        { .length= write_length, .buffer= buffer },
-        { .length= value_length, .buffer= value },
-        { .length= 2, .buffer= "\r\n" }
-      };
+       struct libmemcached_io_vector_st vector[3];
+       memset(&vector, 0, sizeof(vector));
+       vector[0].length= write_length;
+       vector[0].buffer= buffer;
+       vector[1].length= value_length;
+       vector[1].buffer= value;
+       vector[2].length= 2;
+       vector[2].buffer= "\r\n";
 
       if (ptr->flags.buffer_requests && verb == SET_OP)
       {
@@ -401,7 +403,7 @@ memcached_return_t memcached_cas_by_key(memcached_st *ptr,
   return rc;
 }
 
-static inline uint8_t get_com_code(memcached_storage_action_t verb, bool noreply)
+static uint8_t get_com_code(memcached_storage_action_t verb, bool noreply)
 {
   /* 0 isn't a value we want, but GCC 4.2 seems to think ret can otherwise
    * be used uninitialized in this function. FAIL */
@@ -472,10 +474,15 @@ static memcached_return_t memcached_send_binary(memcached_st *ptr,
                                                 memcached_storage_action_t verb)
 {
   bool flush;
-  protocol_binary_request_set request= {.bytes= {0}};
+  protocol_binary_request_set request;
   size_t send_length= sizeof(request.bytes);
-
+  memcached_return_t rc;
+  struct libmemcached_io_vector_st vector[4];
   bool noreply= server->root->flags.no_reply;
+  uint32_t x;
+
+  memset(&vector, 0, sizeof(vector));
+  memset(&request, 0, sizeof(request));
 
   request.message.header.request.magic= PROTOCOL_BINARY_REQ;
   request.message.header.request.opcode= get_com_code(verb, noreply);
@@ -512,16 +519,16 @@ static memcached_return_t memcached_send_binary(memcached_st *ptr,
     }
   }
 
-  struct libmemcached_io_vector_st vector[]=
-  {
-    { .length= send_length, .buffer= request.bytes },
-    { .length= ptr->prefix_key_length, .buffer= ptr->prefix_key },
-    { .length= key_length, .buffer= key },
-    { .length= value_length, .buffer= value }
-  };
+  vector[0].length= send_length;
+  vector[0].buffer= request.bytes;
+  vector[1].length= ptr->prefix_key_length;
+  vector[1].buffer= ptr->prefix_key;
+  vector[2].length= key_length;
+  vector[2].buffer= key;
+  vector[3].length= value_length;
+  vector[0].buffer= value;
 
   /* write the header */
-  memcached_return_t rc;
   if ((rc= memcached_vdo(server, vector, 4, flush)) != MEMCACHED_SUCCESS)
   {
     memcached_io_reset(server);
@@ -533,7 +540,7 @@ static memcached_return_t memcached_send_binary(memcached_st *ptr,
     request.message.header.request.opcode= PROTOCOL_BINARY_CMD_SETQ;
     WATCHPOINT_STRING("replicating");
 
-    for (uint32_t x= 0; x < ptr->number_of_replicas; x++)
+    for (x= 0; x < ptr->number_of_replicas; x++)
     {
       memcached_server_write_instance_st instance;
 
@@ -566,4 +573,3 @@ static memcached_return_t memcached_send_binary(memcached_st *ptr,
 
   return memcached_response(server, NULL, 0, NULL);
 }
-

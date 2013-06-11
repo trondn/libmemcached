@@ -11,7 +11,7 @@
 
 #include "common.h"
 
-inline static memcached_return_t _string_check(memcached_string_st *string, size_t need)
+static memcached_return_t _string_check(memcached_string_st *string, size_t need)
 {
   if (need && need > (size_t)(string->current_size - (size_t)(string->end - string->string)))
   {
@@ -45,7 +45,7 @@ inline static memcached_return_t _string_check(memcached_string_st *string, size
   return MEMCACHED_SUCCESS;
 }
 
-static inline void _init_string(memcached_string_st *self)
+static void _init_string(memcached_string_st *self)
 {
   self->current_size= 0;
   self->end= self->string= NULL;
