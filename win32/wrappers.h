@@ -45,7 +45,6 @@
 #define index(a,b) strchr(a,b)
 #define rindex(a,b) strrchr(a,b)
 #define random() rand()
-#define srandom(a) while (false) {}
 #define kill(a, b) while (false) {}
 #define fork() (-1)
 #define waitpid(a,b,c) (-1)

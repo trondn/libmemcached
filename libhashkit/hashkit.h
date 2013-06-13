@@ -47,7 +47,7 @@ void hashkit_free(hashkit_st *hash);
 #define hashkit_is_initialized(__object) ((__object)->options.is_initialized)
 
 #ifdef __cplusplus
-} // extern "C"
+} /* extern "C" */
 #endif
 
 struct hashkit_st
