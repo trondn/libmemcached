@@ -14,9 +14,6 @@ noinst_HEADERS+= \
 		 libmemcached/internal.h \
 		 libmemcached/io.h \
 		 libmemcached/libmemcached_probes.h \
-		 libmemcached/protocol/ascii_handler.h \
-		 libmemcached/protocol/binary_handler.h \
-		 libmemcached/protocol/common.h \
 		 libmemcached/response.h
 
 nobase_include_HEADERS+= \
@@ -40,9 +37,6 @@ nobase_include_HEADERS+= \
 			 libmemcached/memcached/protocol_binary.h \
 			 libmemcached/parse.h \
                          libmemcached/platform.h \
-			 libmemcached/protocol/cache.h \
-			 libmemcached/protocol/callback.h \
-			 libmemcached/protocol_handler.h \
 			 libmemcached/quit.h \
 			 libmemcached/result.h \
                          libmemcached/sasl.h \
@@ -58,16 +52,6 @@ nobase_include_HEADERS+= \
 			 libmemcached/visibility.h \
 			 libmemcached/watchpoint.h
 
-lib_LTLIBRARIES+= libmemcached/libmemcachedprotocol.la
-libmemcached_libmemcachedprotocol_la_SOURCES =  \
-						libmemcached/protocol/ascii_handler.c \
-						libmemcached/protocol/binary_handler.c \
-						libmemcached/protocol/cache.c \
-						libmemcached/protocol/pedantic.c \
-						libmemcached/protocol/protocol_handler.c
-
-libmemcached_libmemcachedprotocol_la_CFLAGS= ${AM_CFLAGS} ${NO_CONVERSION} ${PTHREAD_CFLAGS}
-libmemcached_libmemcachedprotocol_la_LDFLAGS= ${AM_LDFLAGS} ${PTHREAD_LIBS} -version-info ${MEMCACHED_PROTOCAL_LIBRARY_VERSION}
 
 noinst_LTLIBRARIES+= \
 		     libmemcached/libmemcachedcallbacks.la
@@ -120,58 +104,10 @@ libmemcached_libmemcached_la_DEPENDENCIES= libmemcached/libmemcachedcallbacks.la
 libmemcached_libmemcached_la_LIBADD= $(LIBM) libmemcached/libmemcachedcallbacks.la libmemcached/libmemcachedinternal.la libhashkit/libhashkitinc.la
 libmemcached_libmemcached_la_LDFLAGS= ${AM_LDFLAGS} -version-info ${MEMCACHED_LIBRARY_VERSION}
 
-if BUILD_LIBMEMCACHEDUTIL
-nobase_include_HEADERS+= \
-			 libmemcached/memcached_util.h \
-			 libmemcached/util.h \
-			 libmemcached/util/ping.h \
-			 libmemcached/util/pool.h \
-			 libmemcached/util/version.h
-lib_LTLIBRARIES+= libmemcached/libmemcachedutil.la
-endif
-
-libmemcached_libmemcachedutil_la_SOURCES= \
-					  libmemcached/util/ping.c \
-					  libmemcached/util/pool.c \
-					  libmemcached/util/version.c
-libmemcached_libmemcachedutil_la_CFLAGS= ${AM_CFLAGS} ${NO_CONVERSION} ${PTHREAD_CFLAGS}
-libmemcached_libmemcachedutil_la_LIBADD= libmemcached/libmemcached.la
-libmemcached_libmemcachedutil_la_LDFLAGS= ${AM_LDFLAGS} ${PTHREAD_LIBS} -version-info ${MEMCACHED_UTIL_LIBRARY_VERSION}
-libmemcached_libmemcachedutil_la_DEPENDENCIES= libmemcached/libmemcached.la
 
 if BUILD_BYTEORDER
 noinst_LTLIBRARIES += libmemcached/libbyteorder.la
 libmemcached_libbyteorder_la_SOURCES= libmemcached/byteorder.c
 libmemcached_libmemcached_la_LIBADD += libmemcached/libbyteorder.la
 libmemcached_libmemcached_la_DEPENDENCIES+= libmemcached/libbyteorder.la
-libmemcached_libmemcachedprotocol_la_LIBADD=libmemcached/libbyteorder.la
-libmemcached_libmemcachedprotocol_la_DEPENDENCIES=libmemcached/libbyteorder.la
 endif
-
-if HAVE_SASL
-libmemcached_libmemcached_la_LDFLAGS+= $(LTLIBSASL) $(LTLIBSASL2)
-libmemcached_libmemcached_la_SOURCES += libmemcached/sasl.c
-endif
-
-if HAVE_DTRACE
-BUILT_SOURCES+= libmemcached/dtrace_probes.h
-CLEANFILES+= libmemcached/dtrace_probes.h
-endif
-
-if DTRACE_NEEDS_OBJECTS
-libmemcached_libmemcached_la_SOURCES += libmemcached/libmemcached_probes.d
-libmemcached_libmemcached_la_DEPENDENCIES += libmemcached/libmemcached_probes.o
-libmemcached_libmemcached_la_LIBADD += libmemcached/libmemcached_probes.o
-CLEANFILES+= libmemcached/libmemcached_probes.o
-endif
-
-SUFFIXES+= .d
-
-libmemcached/dtrace_probes.h: libmemcached/libmemcached_probes.d
-	$(DTRACE) $(DTRACEFLAGS) -h -o libmemcached/dtrace_probes.h -s ${top_srcdir}/libmemcached/libmemcached_probes.d
-
-libmemcached/libmemcached_probes.o: libmemcached/libmemcached_probes.d ${libmemcached_libmemcached_la_OBJECTS} config.h
-
-.d.o:
-	$(DTRACE) $(DTRACEFLAGS) -o $@ -G -s $< `grep '^pic_object' ${top_builddir}/libmemcached/*.lo | cut -f 2 -d\' | sed "s/^/${top_builddir}\/libmemcached\//"`
-

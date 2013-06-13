@@ -14,7 +14,6 @@ AC_CONFIG_AUX_DIR(config)
 PANDORA_CANONICAL_TARGET(no-vc-changelog)
 
 #shared library versioning
-MEMCACHED_UTIL_LIBRARY_VERSION=1:0:0
 MEMCACHED_PROTOCAL_LIBRARY_VERSION=0:0:0
 MEMCACHED_LIBRARY_VERSION=6:0:0
 #                         | | |
@@ -27,7 +26,6 @@ MEMCACHED_LIBRARY_VERSION=6:0:0
 #                  |        +- increment if source code has changed
 #                  |           set to zero if current is incremented
 #                  +- increment if interfaces have been added, removed or changed
-AC_SUBST(MEMCACHED_UTIL_LIBRARY_VERSION)
 AC_SUBST(MEMCACHED_PROTOCAL_LIBRARY_VERSION)
 AC_SUBST(MEMCACHED_LIBRARY_VERSION)
 
@@ -106,21 +104,8 @@ PANDORA_CXX_DEMANGLE
 
 dnl Specialty checks
 DETECT_BYTEORDER
-ENABLE_UTILLIB
 SETSOCKOPT_SANITY
-ENABLE_HSIEH_HASH
-ENABLE_MURMUR_HASH
-PROTOCOL_BINARY_TEST
-WITH_MEMCACHED
-ENABLE_DEPRECATED
-PANDORA_HAVE_LIBINNODB
 PANDORA_PRINT_CALLSTACK
-PANDORA_HAVE_SASL
-
-dnl The sasl functions should only be visible if we build with sasl support
-AS_IF([test "x$ac_cv_sasl" = "xyes"],
-      [LIBMEMCACHED_WITH_SASL_SUPPORT="#define LIBMEMCACHED_WITH_SASL_SUPPORT 1"])
-AC_SUBST(LIBMEMCACHED_WITH_SASL_SUPPORT)
 
 AC_CHECK_HEADERS([atomic.h])
 AS_IF([test "x$ac_cv_header_atomic_h" = "xyes"],[
@@ -131,18 +116,6 @@ AS_IF([test "x$ac_cv_header_atomic_h" = "xyes"],[
 	              [1],
                       [Define to true if you want to use functions from atomic.h])])])
 
-AC_ARG_WITH([docs],
-  [AS_HELP_STRING([--with-docs],
-    [Generate documentation (yes|no) @<:@default=yes@:>@])],
-  [with_docs=$withval],
-  [with_docs=yes])
-
-AS_IF([test "$with_docs" = "yes"],
-  [
-    REQUIRE_POD2MAN
-    REQUIRE_PODCHECKER
-  ])
-AM_CONDITIONAL(BUILD_DOCS, test "$with_docs" = "yes")
 
 AC_CHECK_HEADERS_ONCE(winsock2.h poll.h sys/wait.h fnmatch.h)
 AM_CONDITIONAL(BUILD_POLL, test "x$ac_cv_header_poll_h" = "xno")
@@ -157,12 +130,8 @@ SOCKET_SEND_FLAGS
 
 AC_CONFIG_FILES([
   Makefile
-  docs/Makefile
   libhashkit/configure.h
   libmemcached/configure.h
-  support/libmemcached.pc
-  support/libmemcached.spec
-  support/libmemcached-fc.spec
   ])
 AC_OUTPUT
 
@@ -178,26 +147,3 @@ echo "   * Debug enabled:             $with_debug"
 echo "   * Warnings as failure:       $ac_cv_warnings_as_errors"
 echo ""
 echo "---"
-
-case "$host_os" in
-  *freebsd*)
-    echo "*****"
-    echo "*"
-    echo "*  NOTE: You are on FreeBSD. BSD make will not work."
-    echo "*"
-    echo "*   use 'gmake' To build libmemcached"
-    echo "*"
-    echo "*****"
-  ;;
-esac
-
-AS_IF(test "$with_docs" = "no",
-  [
-    echo "*****"
-    echo "*"
-    echo "*  WARNING: You are not generating any documentation."
-    echo "*           Please don't ship libmemcached to an end user"
-    echo "*           without documentation..."
-    echo "*"
-    echo "*****"
-  ])
