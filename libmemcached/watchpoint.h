@@ -16,7 +16,7 @@
 #if defined(DEBUG)
 
 #ifdef TARGET_OS_LINUX
-static inline void libmemcached_stack_dump(void)
+static void libmemcached_stack_dump(void)
 {
   void *array[10];
   int size;
@@ -38,7 +38,7 @@ static inline void libmemcached_stack_dump(void)
 #elif defined(__sun)
 #include <ucontext.h>
 
-static inline void libmemcached_stack_dump(void)
+static void libmemcached_stack_dump(void)
 {
    fflush(stderr);
    printstack(fileno(stderr));
@@ -46,7 +46,7 @@ static inline void libmemcached_stack_dump(void)
 
 #else
 
-static inline void libmemcached_stack_dump(void)
+static void libmemcached_stack_dump(void)
 { }
 
 #endif

@@ -145,7 +145,7 @@ memcached_server_st *memcached_server_create_with(const memcached_st *memc,
                                                   memcached_connection_t type);
 
 
-static inline memcached_return_t memcached_validate_key_length(size_t key_length, bool binary)
+static memcached_return_t memcached_validate_key_length(size_t key_length, bool binary)
 {
   unlikely (key_length == 0)
     return MEMCACHED_BAD_KEY_PROVIDED;
@@ -175,7 +175,7 @@ static inline memcached_return_t memcached_validate_key_length(size_t key_length
   on the system it returns false but sets errno to 0. Otherwise on
   failure errno is set.
 */
-static inline memcached_ternary_t test_cork(memcached_server_st *ptr, int enable)
+static memcached_ternary_t test_cork(memcached_server_st *ptr, int enable)
 {
 #ifdef CORK
   if (ptr->type != MEMCACHED_CONNECTION_TCP)
@@ -202,22 +202,22 @@ static inline memcached_ternary_t test_cork(memcached_server_st *ptr, int enable
 #endif
 }
 
-static inline void libmemcached_free(const memcached_st *ptr, void *mem)
+static void libmemcached_free(const memcached_st *ptr, void *mem)
 {
   ptr->allocators.free(ptr, mem, ptr->allocators.context);
 }
 
-static inline void *libmemcached_malloc(const memcached_st *ptr, const size_t size)
+static void *libmemcached_malloc(const memcached_st *ptr, const size_t size)
 {
   return ptr->allocators.malloc(ptr, size, ptr->allocators.context);
 }
 
-static inline void *libmemcached_realloc(const memcached_st *ptr, void *mem, const size_t size)
+static void *libmemcached_realloc(const memcached_st *ptr, void *mem, const size_t size)
 {
   return ptr->allocators.realloc(ptr, mem, size, ptr->allocators.context);
 }
 
-static inline void *libmemcached_calloc(const memcached_st *ptr, size_t nelem, size_t size)
+static void *libmemcached_calloc(const memcached_st *ptr, size_t nelem, size_t size)
 {
   return ptr->allocators.calloc(ptr, nelem, size, ptr->allocators.context);
 }

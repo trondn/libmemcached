@@ -5,8 +5,8 @@ const char * memcached_lib_version(void)
   return LIBMEMCACHED_VERSION_STRING;
 }
 
-static inline memcached_return_t memcached_version_binary(memcached_st *ptr);
-static inline memcached_return_t memcached_version_textual(memcached_st *ptr);
+static memcached_return_t memcached_version_binary(memcached_st *ptr);
+static memcached_return_t memcached_version_textual(memcached_st *ptr);
 
 memcached_return_t memcached_version(memcached_st *ptr)
 {
@@ -23,7 +23,7 @@ memcached_return_t memcached_version(memcached_st *ptr)
   return rc;
 }
 
-static inline memcached_return_t memcached_version_textual(memcached_st *ptr)
+static memcached_return_t memcached_version_textual(memcached_st *ptr)
 {
   size_t send_length;
   memcached_return_t rc;
@@ -97,7 +97,7 @@ static inline memcached_return_t memcached_version_textual(memcached_st *ptr)
   return rc;
 }
 
-static inline memcached_return_t memcached_version_binary(memcached_st *ptr)
+static memcached_return_t memcached_version_binary(memcached_st *ptr)
 {
   memcached_return_t rc;
   protocol_binary_request_version request= { .bytes= {0}};

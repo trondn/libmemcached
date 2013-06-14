@@ -14,7 +14,7 @@
 */
 #include "common.h"
 
-static inline void _server_init(memcached_server_st *self, const memcached_st *root,
+static void _server_init(memcached_server_st *self, const memcached_st *root,
                                 const char *hostname, in_port_t port,
                                 uint32_t weight, memcached_connection_t type)
 {
@@ -291,4 +291,3 @@ const char *memcached_server_error(memcached_server_instance_st ptr)
     ?  ptr->cached_server_error
     : NULL;
 }
-

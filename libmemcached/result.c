@@ -17,7 +17,7 @@
 */
 #include "common.h"
 
-static inline void _result_init(memcached_result_st *self,
+static void _result_init(memcached_result_st *self,
                                 const memcached_st *memc)
 {
   self->item_flags= 0;

@@ -20,8 +20,8 @@ typedef enum {
   CAS_OP,
 } memcached_storage_action_t;
 
-/* Inline this */
-static inline const char *storage_op_string(memcached_storage_action_t verb)
+/* this */
+static const char *storage_op_string(memcached_storage_action_t verb)
 {
   switch (verb)
   {
@@ -56,7 +56,7 @@ static memcached_return_t memcached_send_binary(memcached_st *ptr,
                                                 uint64_t cas,
                                                 memcached_storage_action_t verb);
 
-static inline memcached_return_t memcached_send(memcached_st *ptr,
+static memcached_return_t memcached_send(memcached_st *ptr,
                                                 const char *master_key, size_t master_key_length,
                                                 const char *key, size_t key_length,
                                                 const char *value, size_t value_length,
@@ -401,7 +401,7 @@ memcached_return_t memcached_cas_by_key(memcached_st *ptr,
   return rc;
 }
 
-static inline uint8_t get_com_code(memcached_storage_action_t verb, bool noreply)
+static uint8_t get_com_code(memcached_storage_action_t verb, bool noreply)
 {
   /* 0 isn't a value we want, but GCC 4.2 seems to think ret can otherwise
    * be used uninitialized in this function. FAIL */
@@ -566,4 +566,3 @@ static memcached_return_t memcached_send_binary(memcached_st *ptr,
 
   return memcached_response(server, NULL, 0, NULL);
 }
-

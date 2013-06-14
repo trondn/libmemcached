@@ -5,7 +5,7 @@
  * Use and distribution licensed under the BSD license.  See
  * the COPYING file in the parent directory for full text.
  *
- * Summary: 
+ * Summary:
  *
  */
 
@@ -17,7 +17,7 @@ uint32_t memcached_generate_hash_value(const char *key, size_t key_length, memca
   return libhashkit_digest(key, key_length, (hashkit_hash_algorithm_t)hash_algorithm);
 }
 
-static inline uint32_t generate_hash(const memcached_st *ptr, const char *key, size_t key_length)
+static uint32_t generate_hash(const memcached_st *ptr, const char *key, size_t key_length)
 {
   return hashkit_digest(&ptr->hashkit, key, key_length);
 }
@@ -65,7 +65,7 @@ static uint32_t dispatch_host(const memcached_st *ptr, uint32_t hash)
 /*
   One version is public and will not modify the distribution hash, the other will.
 */
-static inline uint32_t _generate_hash_wrapper(const memcached_st *ptr, const char *key, size_t key_length)
+static uint32_t _generate_hash_wrapper(const memcached_st *ptr, const char *key, size_t key_length)
 {
   WATCHPOINT_ASSERT(memcached_server_count(ptr));
 
@@ -91,7 +91,7 @@ static inline uint32_t _generate_hash_wrapper(const memcached_st *ptr, const cha
   }
 }
 
-static inline void _regen_for_auto_eject(memcached_st *ptr)
+static void _regen_for_auto_eject(memcached_st *ptr)
 {
   if (_is_auto_eject_host(ptr) && ptr->next_distribution_rebuild)
   {

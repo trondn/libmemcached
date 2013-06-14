@@ -8,7 +8,7 @@ memcached_return_t memcached_delete(memcached_st *ptr, const char *key, size_t k
                                  key, key_length, expiration);
 }
 
-static inline memcached_return_t binary_delete(memcached_st *ptr,
+static memcached_return_t binary_delete(memcached_st *ptr,
                                                uint32_t server_key,
                                                const char *key,
                                                size_t key_length,
@@ -147,7 +147,7 @@ error:
   return rc;
 }
 
-static inline memcached_return_t binary_delete(memcached_st *ptr,
+static memcached_return_t binary_delete(memcached_st *ptr,
                                                uint32_t server_key,
                                                const char *key,
                                                size_t key_length,

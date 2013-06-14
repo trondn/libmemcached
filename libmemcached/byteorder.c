@@ -13,7 +13,7 @@
 
 /* Byte swap a 64-bit number. */
 #ifndef swap64
-static inline uint64_t swap64(uint64_t in)
+static uint64_t swap64(uint64_t in)
 {
 #ifndef WORDS_BIGENDIAN
   /* Little endian, flip the bytes around until someone makes a faster/better

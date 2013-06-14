@@ -38,7 +38,7 @@ static const memcached_st global_copy= {
   }
 };
 
-static inline bool _memcached_init(memcached_st *self)
+static bool _memcached_init(memcached_st *self)
 {
   self->state= global_copy.state;
   self->flags= global_copy.flags;

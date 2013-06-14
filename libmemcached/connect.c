@@ -147,7 +147,7 @@ static memcached_return_t set_hostinfo(memcached_server_st *server)
   return MEMCACHED_SUCCESS;
 }
 
-static inline memcached_return_t set_socket_nonblocking(memcached_server_st *ptr)
+static memcached_return_t set_socket_nonblocking(memcached_server_st *ptr)
 {
 #ifdef WIN32
   u_long arg = 1;

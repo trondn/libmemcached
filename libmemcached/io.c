@@ -199,7 +199,7 @@ static bool process_input_buffer(memcached_server_write_instance_st ptr)
   return false;
 }
 
-static inline void memcached_io_cork_push(memcached_server_st *ptr)
+static void memcached_io_cork_push(memcached_server_st *ptr)
 {
   (void)ptr;
 #ifdef CORK
@@ -216,7 +216,7 @@ static inline void memcached_io_cork_push(memcached_server_st *ptr)
 #endif
 }
 
-static inline void memcached_io_cork_pop(memcached_server_st *ptr)
+static void memcached_io_cork_pop(memcached_server_st *ptr)
 {
   (void)ptr;
 #ifdef CORK
