@@ -1,7 +1,7 @@
 #include "common.h"
 
-char *memcached_fetch(memcached_st *ptr, char *key, size_t *key_length, 
-                      size_t *value_length, 
+char *memcached_fetch(memcached_st *ptr, char *key, size_t *key_length,
+                      size_t *value_length,
                       uint32_t *flags,
                       memcached_return_t *error)
 {
@@ -33,7 +33,7 @@ char *memcached_fetch(memcached_st *ptr, char *key, size_t *key_length,
 
       return NULL;
     }
-    strncpy(key, result_buffer->item_key, result_buffer->key_length); // For the binary protocol we will cut off the key :(
+    strncpy(key, result_buffer->item_key, result_buffer->key_length); /* For the binary protocol we will cut off the key :( */
     *key_length= result_buffer->key_length;
   }
 
@@ -58,7 +58,7 @@ memcached_result_st *memcached_fetch_result(memcached_st *ptr,
     if ((result= memcached_result_create(ptr, NULL)) == NULL)
       return NULL;
 
-  while ((server= memcached_io_get_readable_server(ptr)) != NULL) 
+  while ((server= memcached_io_get_readable_server(ptr)) != NULL)
   {
     char buffer[MEMCACHED_DEFAULT_COMMAND_SIZE];
     *error= memcached_response(server, buffer, sizeof(buffer), result);
@@ -84,7 +84,7 @@ memcached_result_st *memcached_fetch_result(memcached_st *ptr,
   return NULL;
 }
 
-memcached_return_t memcached_fetch_execute(memcached_st *ptr, 
+memcached_return_t memcached_fetch_execute(memcached_st *ptr,
                                            memcached_execute_fn *callback,
                                            void *context,
                                            uint32_t number_of_callbacks)
@@ -92,7 +92,7 @@ memcached_return_t memcached_fetch_execute(memcached_st *ptr,
   memcached_result_st *result= &ptr->result;
   memcached_return_t rc= MEMCACHED_FAILURE;
 
-  while ((result= memcached_fetch_result(ptr, result, &rc)) != NULL) 
+  while ((result= memcached_fetch_result(ptr, result, &rc)) != NULL)
   {
     if (rc == MEMCACHED_SUCCESS)
     {

@@ -49,7 +49,7 @@ static inline void libmemcached_stack_dump(void)
 static inline void libmemcached_stack_dump(void)
 { }
 
-#endif // libmemcached_stack_dump()
+#endif
 
 #include <assert.h>
 

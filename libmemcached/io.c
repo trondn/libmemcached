@@ -56,18 +56,18 @@ static memcached_return_t io_wait(memcached_server_write_instance_st ptr,
   }
 
   size_t loop_max= 5;
-  while (--loop_max) // While loop is for ERESTART or EINTR
+  while (--loop_max) /* While loop is for ERESTART or EINTR */
   {
     error= poll(&fds, 1, ptr->root->poll_timeout);
 
     switch (error)
     {
-    case 1: // Success!
+    case 1: /* Success! */
       WATCHPOINT_IF_LABELED_NUMBER(read_or_write && loop_max < 4, "read() times we had to loop, decremented down from 5", loop_max);
       WATCHPOINT_IF_LABELED_NUMBER(!read_or_write && loop_max < 4, "write() times we had to loop, decremented down from 5", loop_max);
 
       return MEMCACHED_SUCCESS;
-    case 0: // Timeout occured, we let the while() loop do its thing.
+    case 0: /* Timeout occured, we let the while() loop do its thing. */
       return MEMCACHED_TIMEOUT;
     default:
       WATCHPOINT_ERRNO(get_socket_errno());
@@ -233,7 +233,7 @@ static inline void memcached_io_cork_pop(memcached_server_st *ptr)
 #endif
 }
 
-#if 0 // Dead code, this should be removed.
+#if 0 /* Dead code, this should be removed. */
 void memcached_io_preread(memcached_st *ptr)
 {
   unsigned int x;
@@ -382,7 +382,7 @@ static ssize_t _io_write(memcached_server_write_instance_st ptr,
 
     if (ptr->type == MEMCACHED_CONNECTION_UDP)
     {
-      //UDP does not support partial writes
+      /* UDP does not support partial writes */
       buffer_end= MAX_UDP_DATAGRAM_LENGTH;
       should_write= length;
       if (ptr->write_buffer_offset + should_write > buffer_end)
@@ -592,7 +592,7 @@ static ssize_t io_flush(memcached_server_write_instance_st ptr,
 
   WATCHPOINT_ASSERT(ptr->fd != INVALID_SOCKET);
 
-  // UDP Sanity check, make sure that we are not sending somthing too big
+  /* UDP Sanity check, make sure that we are not sending somthing too big */
   if (ptr->type == MEMCACHED_CONNECTION_UDP && write_length > MAX_UDP_DATAGRAM_LENGTH)
   {
     return -1;
@@ -623,7 +623,7 @@ static ssize_t io_flush(memcached_server_write_instance_st ptr,
     if (sent_length == SOCKET_ERROR)
     {
       ptr->cached_errno= get_socket_errno();
-#if 0 // @todo I should look at why we hit this bit of code hard frequently
+#if 0 /* @todo I should look at why we hit this bit of code hard frequently */
       WATCHPOINT_ERRNO(get_socket_errno());
       WATCHPOINT_NUMBER(get_socket_errno());
 #endif
@@ -680,11 +680,11 @@ static ssize_t io_flush(memcached_server_write_instance_st ptr,
   }
 
   WATCHPOINT_ASSERT(write_length == 0);
-  // Need to study this assert() WATCHPOINT_ASSERT(return_length ==
-  // ptr->write_buffer_offset);
+  /* Need to study this assert() WATCHPOINT_ASSERT(return_length == */
+  /* ptr->write_buffer_offset); */
 
-  // if we are a udp server, the begining of the buffer is reserverd for
-  // the upd frame header
+  /* if we are a udp server, the begining of the buffer is reserverd for */
+  /* the upd frame header */
   if (ptr->type == MEMCACHED_CONNECTION_UDP)
     ptr->write_buffer_offset= UDP_DATAGRAM_HEADER_LENGTH;
   else

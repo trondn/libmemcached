@@ -15,7 +15,7 @@
 
 static bool set_flag(uint64_t data)
 {
-  // Wordy :)
+  /* Wordy :) */
   return data ? true : false;
 }
 
@@ -53,7 +53,7 @@ memcached_return_t memcached_behavior_set(memcached_st *ptr,
     ptr->server_failure_limit= (uint32_t)data;
     break;
   case MEMCACHED_BEHAVIOR_BINARY_PROTOCOL:
-    memcached_quit(ptr); // We need t shutdown all of the connections to make sure we do the correct protocol
+    memcached_quit(ptr); /* We need t shutdown all of the connections to make sure we do the correct protocol */
     if (data)
     {
       ptr->flags.verify_key= false;
@@ -211,14 +211,14 @@ memcached_return_t memcached_behavior_set(memcached_st *ptr,
           {
             enabled= test_cork(instance, false);
 
-            if (enabled == false) // Possible bug in OS?
+            if (enabled == false) /* Possible bug in OS? */
             {
-              memcached_quit_server(instance, false); // We should reset everything on this error.
-              return MEMCACHED_ERRNO;  // Errno will be true because we will have already set it.
+              memcached_quit_server(instance, false); /* We should reset everything on this error. */
+              return MEMCACHED_ERRNO;  /* Errno will be true because we will have already set it. */
             }
             ptr->flags.cork= true;
             ptr->flags.tcp_nodelay= true;
-            memcached_quit(ptr); // We go on and reset the connections.
+            memcached_quit(ptr); /* We go on and reset the connections. */
           }
           break;
         case MEM_NOT:
@@ -303,12 +303,12 @@ uint64_t memcached_behavior_get(memcached_st *ptr,
       socklen_t sock_length= sizeof(int);
       memcached_server_write_instance_st instance;
 
-      if (ptr->send_size != -1) // If value is -1 then we are using the default
+      if (ptr->send_size != -1) /* If value is -1 then we are using the default */
         return (uint64_t) ptr->send_size;
 
       instance= memcached_server_instance_fetch(ptr, 0);
 
-      if (instance) // If we have an instance we test, otherwise we just set and pray
+      if (instance) /* If we have an instance we test, otherwise we just set and pray */
       {
         /* REFACTOR */
         /* We just try the first host, and if it is down we return zero */
@@ -337,7 +337,7 @@ uint64_t memcached_behavior_get(memcached_st *ptr,
       socklen_t sock_length= sizeof(int);
       memcached_server_write_instance_st instance;
 
-      if (ptr->recv_size != -1) // If value is -1 then we are using the default
+      if (ptr->recv_size != -1) /* If value is -1 then we are using the default */
         return (uint64_t) ptr->recv_size;
 
       instance= memcached_server_instance_fetch(ptr, 0);

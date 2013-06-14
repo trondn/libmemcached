@@ -115,7 +115,7 @@ memcached_return_t run_distribution(memcached_st *ptr);
 #define memcached_server_response_decrement(A) (A)->cursor_active--
 #define memcached_server_response_reset(A) (A)->cursor_active=0
 
-// These are private 
+/* These are private  */
 #define memcached_is_allocated(__object) ((__object)->options.is_allocated)
 #define memcached_is_initialized(__object) ((__object)->options.is_initialized)
 #define memcached_is_purging(__object) ((__object)->state.is_purging)

@@ -5,7 +5,7 @@
  * Use and distribution licensed under the BSD license.  See
  * the COPYING file in the parent directory for full text.
  *
- * Summary: 
+ * Summary:
  *
  */
 
@@ -208,8 +208,8 @@ static memcached_return_t update_continuum(memcached_st *ptr)
         char sort_host[MEMCACHED_MAX_HOST_SORT_LENGTH]= "";
         int sort_host_length;
 
-        // Spymemcached ketema key format is: hostname/ip:port-index
-        // If hostname is not available then: /ip:port-index
+        /* Spymemcached ketema key format is: hostname/ip:port-index */
+        /* If hostname is not available then: /ip:port-index */
         sort_host_length= snprintf(sort_host, MEMCACHED_MAX_HOST_SORT_LENGTH,
                                    "/%s:%u-%u",
                                    list[host_index].hostname,
@@ -349,7 +349,7 @@ memcached_return_t memcached_server_push(memcached_st *ptr, const memcached_serv
     ptr->number_of_hosts++;
   }
 
-  // Provides backwards compatibility with server list.
+  /* Provides backwards compatibility with server list. */
   {
     memcached_server_write_instance_st instance;
     instance= memcached_server_instance_fetch(ptr, 0);

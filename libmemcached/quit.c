@@ -34,7 +34,7 @@ void memcached_quit_server(memcached_server_st *ptr, bool io_death)
       }
 
       WATCHPOINT_ASSERT(rc == MEMCACHED_SUCCESS || rc == MEMCACHED_FETCH_NOTFINISHED);
-      (void)rc; // Shut up ICC
+      (void)rc; /* Shut up ICC */
 
       /* read until socket is closed, or there is an error
        * closing the socket before all data is read
@@ -72,8 +72,8 @@ void memcached_quit_server(memcached_server_st *ptr, bool io_death)
   ptr->options.is_shutting_down= false;
   memcached_server_response_reset(ptr);
 
-  // We reset the version so that if we end up talking to a different server
-  // we don't have stale server version information.
+  /* We reset the version so that if we end up talking to a different server */
+  /* we don't have stale server version information. */
   ptr->major_version= ptr->minor_version= ptr->micro_version= UINT8_MAX;
 
   if (io_death)

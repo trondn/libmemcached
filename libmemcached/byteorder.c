@@ -28,7 +28,7 @@ static inline uint64_t swap64(uint64_t in)
 #else
   /* big-endian machines don't need byte swapping */
   return in;
-#endif // WORDS_BIGENDIAN
+#endif /* WORDS_BIGENDIAN */
 }
 #endif
 

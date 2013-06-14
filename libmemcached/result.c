@@ -79,7 +79,7 @@ void memcached_result_free(memcached_result_st *ptr)
 
   if (memcached_is_allocated(ptr))
   {
-    WATCHPOINT_ASSERT(ptr->root); // Without a root, that means that result was not properly initialized.
+    WATCHPOINT_ASSERT(ptr->root); /* Without a root, that means that result was not properly initialized. */
     libmemcached_free(ptr->root, ptr);
   }
   else

@@ -1,6 +1,6 @@
 #include "common.h"
 
-const char * memcached_lib_version(void) 
+const char * memcached_lib_version(void)
 {
   return LIBMEMCACHED_VERSION_STRING;
 }
@@ -18,7 +18,7 @@ memcached_return_t memcached_version(memcached_st *ptr)
   if (ptr->flags.binary_protocol)
     rc= memcached_version_binary(ptr);
   else
-    rc= memcached_version_textual(ptr);      
+    rc= memcached_version_textual(ptr);
 
   return rc;
 }
@@ -40,7 +40,7 @@ static inline memcached_return_t memcached_version_textual(memcached_st *ptr)
     memcached_server_write_instance_st instance=
       memcached_server_instance_fetch(ptr, x);
 
-    // Optimization, we only fetch version once.
+    /* Optimization, we only fetch version once. */
     if (instance->major_version != UINT8_MAX)
       continue;
 
@@ -106,7 +106,7 @@ static inline memcached_return_t memcached_version_binary(memcached_st *ptr)
   request.message.header.request.datatype= PROTOCOL_BINARY_RAW_BYTES;
 
   rc= MEMCACHED_SUCCESS;
-  for (uint32_t x= 0; x < memcached_server_count(ptr); x++) 
+  for (uint32_t x= 0; x < memcached_server_count(ptr); x++)
   {
     memcached_return_t rrc;
 
@@ -117,7 +117,7 @@ static inline memcached_return_t memcached_version_binary(memcached_st *ptr)
       continue;
 
     rrc= memcached_do(instance, request.bytes, sizeof(request.bytes), true);
-    if (rrc != MEMCACHED_SUCCESS) 
+    if (rrc != MEMCACHED_SUCCESS)
     {
       memcached_io_reset(instance);
       rc= MEMCACHED_SOME_ERRORS;
@@ -125,7 +125,7 @@ static inline memcached_return_t memcached_version_binary(memcached_st *ptr)
     }
   }
 
-  for (uint32_t x= 0; x < memcached_server_count(ptr); x++) 
+  for (uint32_t x= 0; x < memcached_server_count(ptr); x++)
   {
     memcached_server_write_instance_st instance=
       memcached_server_instance_fetch(ptr, x);
@@ -133,14 +133,14 @@ static inline memcached_return_t memcached_version_binary(memcached_st *ptr)
     if (instance->major_version != UINT8_MAX)
       continue;
 
-    if (memcached_server_response_count(instance) > 0) 
+    if (memcached_server_response_count(instance) > 0)
     {
       memcached_return_t rrc;
       char buffer[32];
       char *p;
 
       rrc= memcached_response(instance, buffer, sizeof(buffer), NULL);
-      if (rrc != MEMCACHED_SUCCESS) 
+      if (rrc != MEMCACHED_SUCCESS)
       {
         memcached_io_reset(instance);
         rc= MEMCACHED_SOME_ERRORS;
