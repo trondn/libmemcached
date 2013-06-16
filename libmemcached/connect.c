@@ -16,11 +16,11 @@
 static memcached_return_t connect_poll(memcached_server_st *ptr)
 {
   struct pollfd fds[1];
-  fds[0].fd = ptr->fd;
-  fds[0].events = POLLOUT;
-
   int error;
   size_t loop_max= 5;
+
+  fds[0].fd = ptr->fd;
+  fds[0].events = POLLOUT;
 
   while (--loop_max) /* Should only loop on cases of ERESTART or EINTR */
   {
@@ -369,7 +369,7 @@ test_connect:
 static memcached_return_t network_connect(memcached_server_st *ptr)
 {
   bool timeout_error_occured= false;
-
+  struct addrinfo *use;
 
   WATCHPOINT_ASSERT(ptr->fd == INVALID_SOCKET);
   WATCHPOINT_ASSERT(ptr->cursor_active == 0);
@@ -384,7 +384,7 @@ static memcached_return_t network_connect(memcached_server_st *ptr)
     ptr->options.sockaddr_inited= true;
   }
 
-  struct addrinfo *use= ptr->address_info;
+  use= ptr->address_info;
   /* Create the socket */
   while (use != NULL)
   {

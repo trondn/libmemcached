@@ -1,8 +1,8 @@
 #include "common.h"
 
-static memcached_return_t memcached_flush_binary(memcached_st *ptr, 
+static memcached_return_t memcached_flush_binary(memcached_st *ptr,
                                                  time_t expiration);
-static memcached_return_t memcached_flush_textual(memcached_st *ptr, 
+static memcached_return_t memcached_flush_textual(memcached_st *ptr,
                                                   time_t expiration);
 
 memcached_return_t memcached_flush(memcached_st *ptr, time_t expiration)
@@ -18,13 +18,14 @@ memcached_return_t memcached_flush(memcached_st *ptr, time_t expiration)
   return rc;
 }
 
-static memcached_return_t memcached_flush_textual(memcached_st *ptr, 
+static memcached_return_t memcached_flush_textual(memcached_st *ptr,
                                                   time_t expiration)
 {
+  unsigned int x;
   unlikely (memcached_server_count(ptr) == 0)
     return MEMCACHED_NO_SERVERS;
 
-  for (unsigned int x= 0; x < memcached_server_count(ptr); x++)
+  for (x= 0; x < memcached_server_count(ptr); x++)
   {
     memcached_return_t rc;
     char buffer[MEMCACHED_DEFAULT_COMMAND_SIZE];
@@ -36,13 +37,18 @@ static memcached_return_t memcached_flush_textual(memcached_st *ptr,
     int send_length;
     if (expiration)
     {
-      send_length= snprintf(buffer, MEMCACHED_DEFAULT_COMMAND_SIZE, 
+       /* We don't support delayed flush */
+       return MEMCACHED_FAILURE;
+
+#if 0
+      send_length= snprintf(buffer, MEMCACHED_DEFAULT_COMMAND_SIZE,
                             "flush_all %llu%s\r\n",
                             (unsigned long long)expiration, no_reply ? " noreply" : "");
+#endif
     }
     else
     {
-      send_length= snprintf(buffer, MEMCACHED_DEFAULT_COMMAND_SIZE, 
+      send_length= snprintf(buffer, MEMCACHED_DEFAULT_COMMAND_SIZE,
                             "flush_all%s\r\n", no_reply ? " noreply" : "");
     }
 
@@ -60,10 +66,12 @@ static memcached_return_t memcached_flush_textual(memcached_st *ptr,
   return MEMCACHED_SUCCESS;
 }
 
-static memcached_return_t memcached_flush_binary(memcached_st *ptr, 
+static memcached_return_t memcached_flush_binary(memcached_st *ptr,
                                                  time_t expiration)
 {
-  protocol_binary_request_flush request= {.bytes= {0}};
+  uint32_t x;
+  protocol_binary_request_flush request;
+  memset(&request, 0, sizeof(request));
 
   unlikely (memcached_server_count(ptr) == 0)
     return MEMCACHED_NO_SERVERS;
@@ -75,7 +83,7 @@ static memcached_return_t memcached_flush_binary(memcached_st *ptr,
   request.message.header.request.bodylen= htonl(request.message.header.request.extlen);
   request.message.body.expiration= htonl((uint32_t) expiration);
 
-  for (uint32_t x= 0; x < memcached_server_count(ptr); x++)
+  for (x= 0; x < memcached_server_count(ptr); x++)
   {
     memcached_server_write_instance_st instance=
       memcached_server_instance_fetch(ptr, x);
@@ -89,14 +97,14 @@ static memcached_return_t memcached_flush_binary(memcached_st *ptr,
       request.message.header.request.opcode= PROTOCOL_BINARY_CMD_FLUSH;
     }
 
-    if (memcached_do(instance, request.bytes, sizeof(request.bytes), true) != MEMCACHED_SUCCESS) 
+    if (memcached_do(instance, request.bytes, sizeof(request.bytes), true) != MEMCACHED_SUCCESS)
     {
       memcached_io_reset(instance);
       return MEMCACHED_WRITE_FAILURE;
-    } 
+    }
   }
 
-  for (uint32_t x= 0; x < memcached_server_count(ptr); x++)
+  for (x= 0; x < memcached_server_count(ptr); x++)
   {
     memcached_server_write_instance_st instance=
       memcached_server_instance_fetch(ptr, x);

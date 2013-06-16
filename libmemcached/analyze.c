@@ -49,13 +49,14 @@ static void calc_hit_ratio(memcached_analysis_st *result,
                            const uint64_t total_get_hits,
                            const uint64_t total_get_cmds)
 {
+  double temp;
   if (total_get_hits == 0 || total_get_cmds == 0)
   {
     result->pool_hit_ratio= 0;
     return;
   }
 
-  double temp= (double) (total_get_hits/total_get_cmds);
+  temp= (double) (total_get_hits/total_get_cmds);
   result->pool_hit_ratio= temp * 100;
 }
 

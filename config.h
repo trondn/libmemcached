@@ -14,59 +14,18 @@
 
 #else
 
-
-/* Define to 1 if you have a MSG_DONTWAIT */
-#define HAVE_MSG_DONTWAIT 1
-
-/* Define to 1 if you have a MSG_NOSIGNAL */
+#ifndef __APPLE__
 #define HAVE_MSG_NOSIGNAL 1
+#define HAVE_MSG_DONTWAIT 1
+#define TIME_WITH_SYS_TIME 1
+#endif
 
-/* Define to 1 if you have a working SO_RCVTIMEO */
-/* #undef HAVE_RCVTIMEO */
-
-/* Define to 1 if you have a working SO_SNDTIMEO */
-/* #undef HAVE_SNDTIMEO */
-
-
-/* Define to 1 if you have the <stdlib.h> header file. */
-#define HAVE_STDLIB_H 1
-
-/* Define to 1 if you have the <strings.h> header file. */
-#define HAVE_STRINGS_H 1
-
-/* Define to 1 if you have the <string.h> header file. */
-#define HAVE_STRING_H 1
-
-/* Define to 1 if you have the <sys/sdt.h> header file. */
-/* #undef HAVE_SYS_SDT_H */
-
-
-/* Define to 1 if you have the <sys/stat.h> header file. */
-#define HAVE_SYS_STAT_H 1
-
-/* Define to 1 if you have the <sys/types.h> header file. */
+#define HAVE_SYS_TIME_H 1
 #define HAVE_SYS_TYPES_H 1
-
-/* Define to 1 if you have the <sys/wait.h> header file. */
-#define HAVE_SYS_WAIT_H 1
-
-/* Define to 1 if you have the <ucontext.h> header file. */
-#define HAVE_UCONTEXT_H 1
-
-/* Define to 1 if you have the <unistd.h> header file. */
-#define HAVE_UNISTD_H 1
 
 /* Define to 1 or 0, depending whether the compiler supports simple visibility
    declarations. */
 #define HAVE_VISIBILITY 1
-
-
-/* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
-#define TIME_WITH_SYS_TIME 1
-
-/* Define to true if you need to test for eagain */
-/* #undef USE_EAGAIN */
-
 
 #endif
 

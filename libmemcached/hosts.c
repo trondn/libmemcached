@@ -228,7 +228,8 @@ static memcached_return_t update_continuum(memcached_st *ptr)
 
         if (is_ketama_weighted)
         {
-          for (uint32_t x= 0; x < pointer_per_hash; x++)
+          uint32_t x;
+          for (x= 0; x < pointer_per_hash; x++)
           {
              value= ketama_server_hash(sort_host, (size_t)sort_host_length, x);
              ptr->continuum[continuum_index].index= host_index;
@@ -277,7 +278,8 @@ static memcached_return_t update_continuum(memcached_st *ptr)
 
         if (is_ketama_weighted)
         {
-          for (uint32_t x = 0; x < pointer_per_hash; x++)
+          uint32_t x;
+          for (x = 0; x < pointer_per_hash; x++)
           {
              value= ketama_server_hash(sort_host, (size_t)sort_host_length, x);
              ptr->continuum[continuum_index].index= host_index;
@@ -317,6 +319,7 @@ memcached_return_t memcached_server_push(memcached_st *ptr, const memcached_serv
 {
   uint32_t count;
   memcached_server_st *new_host_list;
+  uint32_t x;
 
   if (! list)
     return MEMCACHED_SUCCESS;
@@ -330,7 +333,7 @@ memcached_return_t memcached_server_push(memcached_st *ptr, const memcached_serv
 
   memcached_server_list_set(ptr, new_host_list);
 
-  for (uint32_t x= 0; x < count; x++)
+  for (x= 0; x < count; x++)
   {
     memcached_server_write_instance_st instance;
 

@@ -44,7 +44,7 @@ memcached_return_t memcached_verbosity(memcached_st *ptr, uint32_t verbosity)
 {
   int send_length;
   memcached_server_fn callbacks[1];
-
+  struct context_st context;
   char buffer[MEMCACHED_DEFAULT_COMMAND_SIZE];
 
   send_length= snprintf(buffer, MEMCACHED_DEFAULT_COMMAND_SIZE,
@@ -52,7 +52,9 @@ memcached_return_t memcached_verbosity(memcached_st *ptr, uint32_t verbosity)
   if (send_length >= MEMCACHED_DEFAULT_COMMAND_SIZE || send_length < 0)
     return MEMCACHED_WRITE_FAILURE;
 
-  struct context_st context = { .length= (size_t)send_length, .buffer= buffer };
+  memset(&context, 0, sizeof(context));
+  context.length= (size_t)send_length;
+  context.buffer= buffer;
 
   callbacks[0]= _set_verbosity;
 

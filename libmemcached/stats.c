@@ -183,7 +183,7 @@ char *memcached_stat_get_value(const memcached_st *ptr, memcached_stat_st *memc_
   else if (!memcmp("uptime", key, strlen("uptime")))
     length= snprintf(buffer, SMALL_STRING_LEN,"%u", memc_stat->uptime);
   else if (!memcmp("time", key, strlen("time")))
-    length= snprintf(buffer, SMALL_STRING_LEN,"%llu", (unsigned long long)memc_stat->time);
+    length= snprintf(buffer, SMALL_STRING_LEN,"%"PRIu64"u", (uint64_t)memc_stat->time);
   else if (!memcmp("version", key, strlen("version")))
     length= snprintf(buffer, SMALL_STRING_LEN,"%s", memc_stat->version);
   else if (!memcmp("pointer_size", key, strlen("pointer_size")))
@@ -203,23 +203,23 @@ char *memcached_stat_get_value(const memcached_st *ptr, memcached_stat_st *memc_
   else if (!memcmp("connection_structures", key, strlen("connection_structures")))
     length= snprintf(buffer, SMALL_STRING_LEN,"%u", memc_stat->connection_structures);
   else if (!memcmp("cmd_get", key, strlen("cmd_get")))
-    length= snprintf(buffer, SMALL_STRING_LEN,"%llu", (unsigned long long)memc_stat->cmd_get);
+    length= snprintf(buffer, SMALL_STRING_LEN,"%"PRIu64"u", (uint64_t)memc_stat->cmd_get);
   else if (!memcmp("cmd_set", key, strlen("cmd_set")))
-    length= snprintf(buffer, SMALL_STRING_LEN,"%llu", (unsigned long long)memc_stat->cmd_set);
+    length= snprintf(buffer, SMALL_STRING_LEN,"%"PRIu64"u", (uint64_t)memc_stat->cmd_set);
   else if (!memcmp("get_hits", key, strlen("get_hits")))
-    length= snprintf(buffer, SMALL_STRING_LEN,"%llu", (unsigned long long)memc_stat->get_hits);
+    length= snprintf(buffer, SMALL_STRING_LEN,"%"PRIu64"u", (uint64_t)memc_stat->get_hits);
   else if (!memcmp("get_misses", key, strlen("get_misses")))
-    length= snprintf(buffer, SMALL_STRING_LEN,"%llu", (unsigned long long)memc_stat->get_misses);
+    length= snprintf(buffer, SMALL_STRING_LEN,"%"PRIu64"u", (uint64_t)memc_stat->get_misses);
   else if (!memcmp("evictions", key, strlen("evictions")))
-    length= snprintf(buffer, SMALL_STRING_LEN,"%llu", (unsigned long long)memc_stat->evictions);
+    length= snprintf(buffer, SMALL_STRING_LEN,"%"PRIu64"u", (uint64_t)memc_stat->evictions);
   else if (!memcmp("bytes_read", key, strlen("bytes_read")))
-    length= snprintf(buffer, SMALL_STRING_LEN,"%llu", (unsigned long long)memc_stat->bytes_read);
+    length= snprintf(buffer, SMALL_STRING_LEN,"%"PRIu64"u", (uint64_t)memc_stat->bytes_read);
   else if (!memcmp("bytes_written", key, strlen("bytes_written")))
-    length= snprintf(buffer, SMALL_STRING_LEN,"%llu", (unsigned long long)memc_stat->bytes_written);
+    length= snprintf(buffer, SMALL_STRING_LEN,"%"PRIu64"u", (uint64_t)memc_stat->bytes_written);
   else if (!memcmp("bytes", key, strlen("bytes")))
-    length= snprintf(buffer, SMALL_STRING_LEN,"%llu", (unsigned long long)memc_stat->bytes);
+    length= snprintf(buffer, SMALL_STRING_LEN,"%"PRIu64"u", (uint64_t)memc_stat->bytes);
   else if (!memcmp("limit_maxbytes", key, strlen("limit_maxbytes")))
-    length= snprintf(buffer, SMALL_STRING_LEN,"%llu", (unsigned long long)memc_stat->limit_maxbytes);
+    length= snprintf(buffer, SMALL_STRING_LEN,"%"PRIu64"u", (uint64_t)memc_stat->limit_maxbytes);
   else if (!memcmp("threads", key, strlen("threads")))
     length= snprintf(buffer, SMALL_STRING_LEN,"%u", memc_stat->threads);
   else
@@ -247,9 +247,12 @@ static memcached_return_t binary_stats_fetch(memcached_stat_st *memc_stat,
                                              struct local_context *check)
 {
   memcached_return_t rc;
+  struct libmemcached_io_vector_st vector[2];
 
   char buffer[MEMCACHED_DEFAULT_COMMAND_SIZE];
-  protocol_binary_request_stats request= {.bytes= {0}};
+  protocol_binary_request_stats request;
+  memset(&request, 0, sizeof(request));
+  memset(&vector, 0, sizeof(vector));
   request.message.header.request.magic= PROTOCOL_BINARY_REQ;
   request.message.header.request.opcode= PROTOCOL_BINARY_CMD_STAT;
   request.message.header.request.datatype= PROTOCOL_BINARY_RAW_BYTES;
@@ -265,11 +268,10 @@ static memcached_return_t binary_stats_fetch(memcached_stat_st *memc_stat,
     request.message.header.request.keylen= htons((uint16_t)len);
     request.message.header.request.bodylen= htonl((uint32_t) len);
 
-    struct libmemcached_io_vector_st vector[]=
-    {
-      { .length= sizeof(request.bytes), .buffer= request.bytes },
-      { .length= len, .buffer= args }
-    };
+    vector[0].length= sizeof(request.bytes);
+    vector[0].buffer= request.bytes;
+    vector[1].length= len;
+    vector[1].buffer= args;
 
     if (memcached_vdo(instance, vector, 2, true) != MEMCACHED_SUCCESS)
     {
@@ -404,6 +406,7 @@ memcached_stat_st *memcached_stat(memcached_st *ptr, char *args, memcached_retur
 {
   memcached_return_t rc;
   memcached_stat_st *stats;
+  uint32_t x;
 
   unlikely (ptr->flags.use_udp)
   {
@@ -420,7 +423,7 @@ memcached_stat_st *memcached_stat(memcached_st *ptr, char *args, memcached_retur
   }
 
   rc= MEMCACHED_SUCCESS;
-  for (uint32_t x= 0; x < memcached_server_count(ptr); x++)
+  for (x= 0; x < memcached_server_count(ptr); x++)
   {
     memcached_return_t temp_return;
     memcached_server_write_instance_st instance;
@@ -551,9 +554,14 @@ static memcached_return_t call_stat_fn(memcached_st *ptr,
 
 memcached_return_t memcached_stat_execute(memcached_st *memc, const char *args,  memcached_stat_fn func, void *context)
 {
-  memcached_version(memc);
+   struct local_context check;
+   memset(&check, 0, sizeof(check));
 
- struct local_context check= { .func= func, .context= context, .args= args };
+   memcached_version(memc);
+
+   check.func= func;
+   check.context= context;
+   check.args= args;
 
  return memcached_server_execute(memc, call_stat_fn, (void *)&check);
 }

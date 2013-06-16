@@ -24,11 +24,13 @@ static void increment_udp_message_id(memcached_server_write_instance_st ptr);
 static memcached_return_t io_wait(memcached_server_write_instance_st ptr,
                                   memc_read_or_write read_or_write)
 {
-  struct pollfd fds= {
-    .fd= ptr->fd,
-    .events = POLLIN
-  };
+  struct pollfd fds;
   int error;
+  size_t loop_max= 5;
+
+  memset(&fds, 0, sizeof(fds));
+  fds.fd= ptr->fd;
+  fds.events = POLLIN;
 
   if (read_or_write == MEM_WRITE) /* write */
   {
@@ -47,7 +49,7 @@ static memcached_return_t io_wait(memcached_server_write_instance_st ptr,
    ** application layer (just sending a lot of data etc)
    ** The test is moved down in the purge function to avoid duplication of
    ** the test.
- */
+   */
   if (read_or_write == MEM_WRITE)
   {
     memcached_return_t rc= memcached_purge(ptr);
@@ -55,7 +57,6 @@ static memcached_return_t io_wait(memcached_server_write_instance_st ptr,
       return MEMCACHED_FAILURE;
   }
 
-  size_t loop_max= 5;
   while (--loop_max) /* While loop is for ERESTART or EINTR */
   {
     error= poll(&fds, 1, ptr->root->poll_timeout);
@@ -170,12 +171,13 @@ static bool process_input_buffer(memcached_server_write_instance_st ptr)
      * callbacks
    */
     memcached_callback_st cb= *ptr->root->callbacks;
+    char buffer[MEMCACHED_DEFAULT_COMMAND_SIZE];
+    memcached_return_t error;
+    memcached_st *root;
 
     memcached_set_processing_input((memcached_st *)ptr->root, true);
 
-    char buffer[MEMCACHED_DEFAULT_COMMAND_SIZE];
-    memcached_return_t error;
-    memcached_st *root= (memcached_st *)ptr->root;
+    root= (memcached_st *)ptr->root;
     error= memcached_response(ptr, buffer, sizeof(buffer),
                               &root->result);
 
@@ -183,7 +185,8 @@ static bool process_input_buffer(memcached_server_write_instance_st ptr)
 
     if (error == MEMCACHED_SUCCESS)
     {
-      for (unsigned int x= 0; x < cb.number_of_callback; x++)
+      unsigned int x;
+      for (x= 0; x < cb.number_of_callback; x++)
       {
         error= (*cb.callback[x])(ptr->root, &root->result, cb.context);
         if (error != MEMCACHED_SUCCESS)
@@ -282,8 +285,8 @@ memcached_return_t memcached_io_read(memcached_server_write_instance_st ptr,
         }
         else if (data_read == SOCKET_ERROR)
         {
-          ptr->cached_errno= get_socket_errno();
           memcached_return_t rc= MEMCACHED_ERRNO;
+          ptr->cached_errno= get_socket_errno();
           switch (get_socket_errno())
           {
           case EWOULDBLOCK:
@@ -449,8 +452,9 @@ ssize_t memcached_io_writev(memcached_server_write_instance_st ptr,
                             size_t number_of, bool with_flush)
 {
   ssize_t total= 0;
+  size_t x;
 
-  for (size_t x= 0; x < number_of; x++, vector++)
+  for (x= 0; x < number_of; x++, vector++)
   {
     ssize_t returnable;
 
@@ -501,8 +505,10 @@ memcached_server_write_instance_st memcached_io_get_readable_server(memcached_st
 #define MAX_SERVERS_TO_POLL 100
   struct pollfd fds[MAX_SERVERS_TO_POLL];
   unsigned int host_index= 0;
+  uint32_t x;
+  int err;
 
-  for (uint32_t x= 0;
+  for (x= 0;
        x< memcached_server_count(memc) && host_index < MAX_SERVERS_TO_POLL;
        ++x)
   {
@@ -524,7 +530,7 @@ memcached_server_write_instance_st memcached_io_get_readable_server(memcached_st
   if (host_index < 2)
   {
     /* We have 0 or 1 server with pending events.. */
-    for (uint32_t x= 0; x< memcached_server_count(memc); ++x)
+    for (x= 0; x< memcached_server_count(memc); ++x)
     {
       memcached_server_write_instance_st instance=
         memcached_server_instance_fetch(memc, x);
@@ -538,7 +544,7 @@ memcached_server_write_instance_st memcached_io_get_readable_server(memcached_st
     return NULL;
   }
 
-  int err= poll(fds, host_index, memc->poll_timeout);
+  err= poll(fds, host_index, memc->poll_timeout);
   switch (err) {
   case -1:
     memc->cached_errno = get_socket_errno();
@@ -546,20 +552,21 @@ memcached_server_write_instance_st memcached_io_get_readable_server(memcached_st
   case 0:
     break;
   default:
-    for (size_t x= 0; x < host_index; ++x)
-    {
-      if (fds[x].revents & POLLIN)
-      {
-        for (uint32_t y= 0; y < memcached_server_count(memc); ++y)
-        {
-          memcached_server_write_instance_st instance=
-            memcached_server_instance_fetch(memc, y);
+     {
+        size_t xx;
+        for (xx= 0; xx < host_index; ++xx) {
+           if (fds[xx].revents & POLLIN) {
+              uint32_t y;
+              for (y= 0; y < memcached_server_count(memc); ++y) {
+                 memcached_server_write_instance_st instance=
+                    memcached_server_instance_fetch(memc, y);
 
-          if (instance->fd == fds[x].fd)
-            return instance;
+                 if (instance->fd == fds[xx].fd)
+                    return instance;
+              }
+           }
         }
-      }
-    }
+     }
   }
 
   return NULL;
@@ -572,7 +579,12 @@ static ssize_t io_flush(memcached_server_write_instance_st ptr,
    ** We might want to purge the input buffer if we haven't consumed
    ** any output yet... The test for the limits is the purge is inline
    ** in the purge function to avoid duplicating the logic..
- */
+   */
+  ssize_t sent_length;
+  size_t return_length;
+  char *local_write_ptr;
+  size_t write_length;
+
   {
     memcached_return_t rc;
     WATCHPOINT_ASSERT(ptr->fd != INVALID_SOCKET);
@@ -583,10 +595,9 @@ static ssize_t io_flush(memcached_server_write_instance_st ptr,
       return -1;
     }
   }
-  ssize_t sent_length;
-  size_t return_length;
-  char *local_write_ptr= ptr->write_buffer;
-  size_t write_length= ptr->write_buffer_offset;
+
+  local_write_ptr= ptr->write_buffer;
+  write_length= ptr->write_buffer_offset;
 
   *error= MEMCACHED_SUCCESS;
 
@@ -636,6 +647,7 @@ static ssize_t io_flush(memcached_server_write_instance_st ptr,
       case EAGAIN:
 #endif
         {
+          memcached_return_t rc;
           /*
            * We may be blocked on write because the input buffer
            * is full. Let's check if we have room in our input
@@ -646,7 +658,6 @@ static ssize_t io_flush(memcached_server_write_instance_st ptr,
               process_input_buffer(ptr))
             continue;
 
-          memcached_return_t rc;
           rc= io_wait(ptr, MEM_WRITE);
 
           if (rc == MEMCACHED_SUCCESS || rc == MEMCACHED_TIMEOUT)
@@ -799,10 +810,11 @@ static void increment_udp_message_id(memcached_server_write_instance_st ptr)
 
 memcached_return_t memcached_io_init_udp_header(memcached_server_write_instance_st ptr, uint16_t thread_id)
 {
+  struct udp_datagram_header_st *header;
   if (thread_id > UDP_REQUEST_ID_MAX_THREAD_ID)
     return MEMCACHED_FAILURE;
 
-  struct udp_datagram_header_st *header= (struct udp_datagram_header_st *)ptr->write_buffer;
+  header= (struct udp_datagram_header_st *)ptr->write_buffer;
   header->request_id= htons((uint16_t) (generate_udp_request_thread_id(thread_id)));
   header->num_datagrams= htons(1);
   header->sequence_number= htons(0);

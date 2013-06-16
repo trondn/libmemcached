@@ -10,10 +10,10 @@ static memcached_return_t memcached_version_textual(memcached_st *ptr);
 
 memcached_return_t memcached_version(memcached_st *ptr)
 {
+  memcached_return_t rc;
+
   if (ptr->flags.use_udp)
     return MEMCACHED_NOT_SUPPORTED;
-
-  memcached_return_t rc;
 
   if (ptr->flags.binary_protocol)
     rc= memcached_version_binary(ptr);
@@ -30,11 +30,12 @@ static memcached_return_t memcached_version_textual(memcached_st *ptr)
   char buffer[MEMCACHED_DEFAULT_COMMAND_SIZE];
   char *response_ptr;
   const char *command= "version\r\n";
+  uint32_t x;
 
   send_length= strlen(command);
 
   rc= MEMCACHED_SUCCESS;
-  for (uint32_t x= 0; x < memcached_server_count(ptr); x++)
+  for (x= 0; x < memcached_server_count(ptr); x++)
   {
     memcached_return_t rrc;
     memcached_server_write_instance_st instance=
@@ -100,13 +101,16 @@ static memcached_return_t memcached_version_textual(memcached_st *ptr)
 static memcached_return_t memcached_version_binary(memcached_st *ptr)
 {
   memcached_return_t rc;
-  protocol_binary_request_version request= { .bytes= {0}};
+  uint32_t x;
+  protocol_binary_request_version request;
+
+  memset(&request, 0, sizeof(request));
   request.message.header.request.magic= PROTOCOL_BINARY_REQ;
   request.message.header.request.opcode= PROTOCOL_BINARY_CMD_VERSION;
   request.message.header.request.datatype= PROTOCOL_BINARY_RAW_BYTES;
 
   rc= MEMCACHED_SUCCESS;
-  for (uint32_t x= 0; x < memcached_server_count(ptr); x++)
+  for (x= 0; x < memcached_server_count(ptr); x++)
   {
     memcached_return_t rrc;
 
@@ -125,7 +129,7 @@ static memcached_return_t memcached_version_binary(memcached_st *ptr)
     }
   }
 
-  for (uint32_t x= 0; x < memcached_server_count(ptr); x++)
+  for (x= 0; x < memcached_server_count(ptr); x++)
   {
     memcached_server_write_instance_st instance=
       memcached_server_instance_fetch(ptr, x);

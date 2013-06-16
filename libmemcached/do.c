@@ -56,6 +56,8 @@ memcached_return_t memcached_vdo(memcached_server_write_instance_st ptr,
 {
   memcached_return_t rc;
   ssize_t sent_length;
+  size_t command_length= 0;
+  uint32_t x;
 
   WATCHPOINT_ASSERT(count);
   WATCHPOINT_ASSERT(vector);
@@ -78,8 +80,7 @@ memcached_return_t memcached_vdo(memcached_server_write_instance_st ptr,
 
   sent_length= memcached_io_writev(ptr, vector, count, with_flush);
 
-  size_t command_length= 0;
-  for (uint32_t x= 0; x < count; ++x, vector++)
+  for (x= 0; x < count; ++x, vector++)
   {
     command_length+= vector->length;
   }

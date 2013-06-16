@@ -3,4 +3,16 @@
 /Makefile
 /cmake_install.cmake
 /libhashkit.so*
-/liblmemcached.so*
+/libmemcached.so*
+/hashkit.dll*
+/hashkit.exp
+/hashkit.ilk
+/hashkit.lib
+/hashkit.pdb
+/memcached.dll*
+/memcached.exp
+/memcached.ilk
+/memcached.lib
+/memcached.pdb
+/libmemcached*dylib
+/libhashkit*dylib

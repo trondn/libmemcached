@@ -21,7 +21,11 @@ SET_TARGET_PROPERTIES(hashkit PROPERTIES SOVERSION 1.0.0)
 SET_TARGET_PROPERTIES(hashkit PROPERTIES
                       COMPILE_FLAGS -DBUILDING_HASHKIT=1)
 
-ADD_LIBRARY(lmemcached SHARED
+IF (WIN32)
+  SET(LMCD_EXTRA libmemcached/win32.c)
+ENDIF(WIN32)
+
+ADD_LIBRARY(memcached SHARED
             libmemcached/allocators.c libmemcached/analyze.c
             libmemcached/auto.c libmemcached/behavior.c
             libmemcached/byteorder.c libmemcached/connect.c
@@ -37,18 +41,19 @@ ADD_LIBRARY(lmemcached SHARED
             libmemcached/stats.c libmemcached/string.c
             libmemcached/storage.c
             libmemcached/strerror.c libmemcached/verbosity.c
-            libmemcached/version.c)
+            libmemcached/version.c ${LMCD_EXTRA})
 
-SET_TARGET_PROPERTIES(lmemcached PROPERTIES SOVERSION 6.1.0)
-SET_TARGET_PROPERTIES(lmemcached PROPERTIES
-                      COMPILE_FLAGS "-std=gnu99")
+SET_TARGET_PROPERTIES(memcached PROPERTIES SOVERSION 6.1.0)
 
 IF (WIN32)
     INCLUDE_DIRECTORIES(BEFORE ${SOURCE_ROOT}
                                ${SOURCE_ROOT}/win32)
+
+    TARGET_LINK_LIBRARIES(memcached hashkit ws2_32)
 ELSE (WIN32)
     INCLUDE_DIRECTORIES(BEFORE ${SOURCE_ROOT})
     TARGET_LINK_LIBRARIES(hashkit m)
+    TARGET_LINK_LIBRARIES(memcached hashkit)
 ENDIF (WIN32)
 
 INSTALL(FILES
@@ -80,7 +85,7 @@ INSTALL(FILES
         libmemcached/watchpoint.h
         DESTINATION include/libmemcached)
 
-INSTALL(TARGETS hashkit lmemcached
+INSTALL(TARGETS hashkit memcached
   RUNTIME DESTINATION bin
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib

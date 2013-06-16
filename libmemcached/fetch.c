@@ -96,7 +96,8 @@ memcached_return_t memcached_fetch_execute(memcached_st *ptr,
   {
     if (rc == MEMCACHED_SUCCESS)
     {
-      for (uint32_t x= 0; x < number_of_callbacks; x++)
+      uint32_t x;
+      for (x= 0; x < number_of_callbacks; x++)
       {
         rc= (*callback[x])(ptr, result, context);
         if (rc != MEMCACHED_SUCCESS)

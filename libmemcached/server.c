@@ -153,12 +153,13 @@ memcached_return_t memcached_server_cursor(const memcached_st *ptr,
                                            void *context,
                                            uint32_t number_of_callbacks)
 {
-  for (uint32_t x= 0; x < memcached_server_count(ptr); x++)
+  uint32_t x, y;
+  for (x= 0; x < memcached_server_count(ptr); x++)
   {
     memcached_server_instance_st instance=
       memcached_server_instance_by_position(ptr, x);
 
-    for (uint32_t y= 0; y < number_of_callbacks; y++)
+    for (y= 0; y < number_of_callbacks; y++)
     {
       unsigned int iferror;
 
@@ -176,7 +177,8 @@ memcached_return_t memcached_server_execute(memcached_st *ptr,
                                             memcached_server_execute_fn callback,
                                             void *context)
 {
-  for (uint32_t x= 0; x < memcached_server_count(ptr); x++)
+   uint32_t x;
+  for (x= 0; x < memcached_server_count(ptr); x++)
   {
     memcached_server_write_instance_st instance=
       memcached_server_instance_fetch(ptr, x);
@@ -236,12 +238,15 @@ memcached_server_instance_st memcached_server_get_last_disconnect(const memcache
 
 void memcached_server_list_free(memcached_server_list_st self)
 {
+   const memcached_st *root;
+   uint32_t x;
+
   if (self == NULL)
     return;
 
-  const memcached_st *root= self->root;
+  root= self->root;
 
-  for (uint32_t x= 0; x < memcached_server_list_count(self); x++)
+  for (x= 0; x < memcached_server_list_count(self); x++)
   {
     if (self[x].address_info)
     {

@@ -145,82 +145,17 @@ memcached_server_st *memcached_server_create_with(const memcached_st *memc,
                                                   memcached_connection_t type);
 
 
-static memcached_return_t memcached_validate_key_length(size_t key_length, bool binary)
-{
-  unlikely (key_length == 0)
-    return MEMCACHED_BAD_KEY_PROVIDED;
+LIBMEMCACHED_LOCAL
+memcached_return_t memcached_validate_key_length(size_t key_length, bool binary);
 
-  if (binary)
-  {
-    unlikely (key_length > 0xffff)
-      return MEMCACHED_BAD_KEY_PROVIDED;
-  }
-  else
-  {
-    unlikely (key_length >= MEMCACHED_MAX_KEY)
-      return MEMCACHED_BAD_KEY_PROVIDED;
-  }
-
-  return MEMCACHED_SUCCESS;
-}
-
-#ifdef TCP_CORK
-  #define CORK TCP_CORK
-#elif defined TCP_NOPUSH
-  #define CORK TCP_NOPUSH
-#endif
-
-/*
-  test_cork() tries to enable TCP_CORK. IF TCP_CORK is not an option
-  on the system it returns false but sets errno to 0. Otherwise on
-  failure errno is set.
-*/
-static memcached_ternary_t test_cork(memcached_server_st *ptr, int enable)
-{
-#ifdef CORK
-  if (ptr->type != MEMCACHED_CONNECTION_TCP)
-    return MEM_FALSE;
-
-  int err= setsockopt(ptr->fd, IPPROTO_TCP, CORK,
-                      &enable, (socklen_t)sizeof(int));
-  if (! err)
-  {
-    return MEM_TRUE;
-  }
-
-  perror(strerror(errno));
-  ptr->cached_errno= errno;
-
-  return MEM_FALSE;
-#else
-  (void)ptr;
-  (void)enable;
-
-  ptr->cached_errno= 0;
-
-  return MEM_NOT;
-#endif
-}
-
-static void libmemcached_free(const memcached_st *ptr, void *mem)
-{
-  ptr->allocators.free(ptr, mem, ptr->allocators.context);
-}
-
-static void *libmemcached_malloc(const memcached_st *ptr, const size_t size)
-{
-  return ptr->allocators.malloc(ptr, size, ptr->allocators.context);
-}
-
-static void *libmemcached_realloc(const memcached_st *ptr, void *mem, const size_t size)
-{
-  return ptr->allocators.realloc(ptr, mem, size, ptr->allocators.context);
-}
-
-static void *libmemcached_calloc(const memcached_st *ptr, size_t nelem, size_t size)
-{
-  return ptr->allocators.calloc(ptr, nelem, size, ptr->allocators.context);
-}
+LIBMEMCACHED_LOCAL
+void libmemcached_free(const memcached_st *ptr, void *mem);
+LIBMEMCACHED_LOCAL
+void *libmemcached_malloc(const memcached_st *ptr, const size_t size);
+LIBMEMCACHED_LOCAL
+void *libmemcached_realloc(const memcached_st *ptr, void *mem, const size_t size);
+LIBMEMCACHED_LOCAL
+void *libmemcached_calloc(const memcached_st *ptr, size_t nelem, size_t size);
 
 #ifdef __cplusplus
 }

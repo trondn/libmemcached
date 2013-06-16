@@ -30,11 +30,10 @@ static uint32_t dispatch_host(const memcached_st *ptr, uint32_t hash)
   case MEMCACHED_DISTRIBUTION_CONSISTENT_KETAMA:
   case MEMCACHED_DISTRIBUTION_CONSISTENT_KETAMA_SPY:
     {
+      memcached_continuum_item_st *begin, *end, *left, *right, *middle;
       uint32_t num= ptr->continuum_points_counter;
       WATCHPOINT_ASSERT(ptr->continuum);
 
-      hash= hash;
-      memcached_continuum_item_st *begin, *end, *left, *right, *middle;
       begin= left= ptr->continuum;
       end= right= ptr->continuum + num;
 
@@ -75,7 +74,8 @@ static uint32_t _generate_hash_wrapper(const memcached_st *ptr, const char *key,
   if (ptr->flags.hash_with_prefix_key)
   {
     size_t temp_length= ptr->prefix_key_length + key_length;
-    char temp[temp_length];
+    char *temp = malloc(temp_length);
+    uint32_t ret;
 
     if (temp_length > MEMCACHED_MAX_KEY -1)
       return 0;
@@ -83,7 +83,9 @@ static uint32_t _generate_hash_wrapper(const memcached_st *ptr, const char *key,
     strncpy(temp, ptr->prefix_key, ptr->prefix_key_length);
     strncpy(temp + ptr->prefix_key_length, key, key_length);
 
-    return generate_hash(ptr, temp, temp_length);
+    ret = generate_hash(ptr, temp, temp_length);
+    free(temp);
+    return ret;
   }
   else
   {

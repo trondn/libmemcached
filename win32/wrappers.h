@@ -24,7 +24,24 @@
 #undef malloc
 #undef realloc
 
+#define snprintf _snprintf
+#define PRIu64 "I64u"
 
+#define poll(a,b,c) WSAPoll(a,b,c)
+
+#define gettimeofday(a, b) win_gettimeofday(a)
+extern int win_gettimeofday(struct timeval *t);
+#define strdup(a) _strdup(a)
+#define strtoull(a, b, c) _strtoui64(a, b, c) 
+#define strtoll(a, b, c) _strtoi64(a, b, c) 
+
+#define getsockopt(a, b, c, d, e) win_getsockopt(a, b, c, d, e)
+extern int win_getsockopt(SOCKET s, int level, int optname, void *value, socklen_t *option_len);
+
+#define setsockopt(a, b, c, d, e) win_setsockopt(a, b, c, d, e)
+extern int win_setsockopt(SOCKET s, int level, int optname, const void *value, socklen_t option_len);
+
+#if 0
 /*
  * WinSock use a separate range for error codes. Let's just map to the
  * WinSock ones.
@@ -37,6 +54,7 @@
 #define ENOTCONN WSAENOTCONN
 #define ENOBUFS WSAENOBUFS
 #define SHUT_RDWR SD_BOTH
+#endif
 
 /* EAI_SYSTEM isn't defined anywhere... just set it to... 11? */
 #define EAI_SYSTEM 11
