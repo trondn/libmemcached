@@ -32,6 +32,7 @@
 
 #ifdef __sun
 #define HAVE_HTONLL 1
+#define MSG_NOSIGNAL 0
 #endif
 
 #include <inttypes.h>
