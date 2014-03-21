@@ -16,7 +16,7 @@
 #ifndef __LIBMEMCACHED_COMMON_H__
 #define __LIBMEMCACHED_COMMON_H__
 
-#include "config.h"
+#include "libmemcached_config.h"
 
 #include <stdio.h>
 #include <stdlib.h>

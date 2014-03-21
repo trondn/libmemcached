@@ -12,7 +12,7 @@
 #ifndef __LIBMEMCACHED_BYTEORDER_H__
 #define __LIBMEMCACHED_BYTEORDER_H__
 
-#include "config.h"
+#include "libmemcached_config.h"
 
 #if HAVE_SYS_TYPES_H
 #include <sys/types.h>

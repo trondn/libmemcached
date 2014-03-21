@@ -8,7 +8,7 @@
  * Summary: Implementation of poll by using select
  *
  */
-#include "config.h"
+#include "libmemcached_config.h"
 #include <sys/time.h>
 #include <strings.h>
 

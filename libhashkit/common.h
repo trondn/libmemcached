@@ -9,7 +9,7 @@
 #ifndef HASHKIT_COMMON_H
 #define HASHKIT_COMMON_H
 
-#include "config.h"
+#include "libmemcached_config.h"
 
 #include <assert.h>
 #include <errno.h>
