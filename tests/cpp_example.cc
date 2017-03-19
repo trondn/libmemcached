@@ -168,7 +168,7 @@ void setProduct(const string &key, const Product &product)
 
 int main()
 {
-  Memcache first_client("127.0.0.1:19191");
+  Memcache first_client("--SERVER=127.0.0.1:19191");
   map< string, map<string, string> > my_stats;
   first_client.getStats(my_stats);
   
